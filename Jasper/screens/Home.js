@@ -17,8 +17,8 @@ const { width } = Dimensions.get("screen");
 
 // Database
 
-const Home = ({route, navigation}) => {
-	const {items} = route.params;
+const Home = ({ route, navigation }) => {
+	const { items } = route.params;
 
 	// sort items by date
 	let datePairs = Object.keys(items).map((key) => [
@@ -51,7 +51,7 @@ const Home = ({route, navigation}) => {
 			};
 
 			result.push(
-				<Block flex row>
+				<Block flex row key={"Home_row_" + i}>
 					{card1()}
 					{card2()}
 				</Block>

@@ -8,7 +8,7 @@ export const users = {
 		rating: 5.0,
 		paymentOptions:["PayPal", "Venmo", "WeChat", "Zelle"],
 		interests: ["Furniture", "Electronics"],
-		likedItems: ["i00005", "i00010"],
+		savedItems: ["i00005", "i00010"],
 		postedItems: ["i00001", "i00002", "i00003", "i00004"]
 	},
 	u00002: {
@@ -20,7 +20,7 @@ export const users = {
 		rating: 5.0,
 		paymentOptions:["Venmo", "Zelle"],
 		interests: ["Furniture", "Electronics"],
-		likedItems: ["i00001", "i00002", "i00009"],
+		savedItems: ["i00001", "i00002", "i00009"],
 		postedItems: ["i00005", "i00006", "i00007"]
 	},
 	u00003: {
@@ -32,7 +32,7 @@ export const users = {
 		rating: 4.5730,
 		paymentOptions:["PayPal", "Venmo"],
 		interests: ["Fashion", "Sports"],
-		likedItems: ["i00003", "i00005"],
+		savedItems: ["i00003", "i00005"],
 		postedItems: ["i00008", "i00009", "i00010"]
 	},
 };

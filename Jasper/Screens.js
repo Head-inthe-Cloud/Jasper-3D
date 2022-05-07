@@ -33,6 +33,7 @@ import Chat2 from "./screens/Chat2";
 import PostDone from "./screens/PostDone";
 
 import { items, users, conversations } from "./constants/mockData";
+import { RotationGestureHandler } from "react-native-gesture-handler";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -55,7 +56,10 @@ const CustomTabBarButton = ({ children, onPress }) => (
 	</TouchableOpacity>
 );
 
-function SavedStack(props) {
+function SavedStack({route}) {
+	const {allItems, userId} = route.params; 
+	const savedItemIds = users[userId].savedItems;
+
 	return (
 		<Stack.Navigator
 			screenOptions={{
@@ -66,6 +70,7 @@ function SavedStack(props) {
 			<Stack.Screen
 				name="Saved"
 				component={Saved}
+				initialParams={{allItems: allItems, savedItemIds: savedItemIds}}
 				options={{
 					header: ({ navigation, scene }) => (
 						<Header
@@ -253,7 +258,9 @@ function HomeStack({ route }) {
 
 function LandingStack(props) {
 	// Database
-	const [user, loading] = useAuthState(getAuth());
+	// const [userId, loading] = useAuthState(getAuth());
+
+	const userId = "u00001";
 	const [allItems, setAllItems] = useState();
 
 	useEffect(() => {
@@ -267,7 +274,6 @@ function LandingStack(props) {
 
 
 		// *************************************
-
 
 		const allItemsOffFunction = onValue(allItemsRef, (snapshot) => {
 			const newAllItems = snapshot.val();
@@ -334,14 +340,14 @@ function LandingStack(props) {
 			<Stack.Screen
 				name="App"
 				component={AppTabs}
-				initialParams={{ allItems: allItems }}
+				initialParams={{ allItems: allItems, userId: userId }}
 			/>
 		</Stack.Navigator>
 	);
 }
 
 function AppTabs({ route }) {
-	const { allItems } = route.params;
+	const { allItems, userId } = route.params;
 	return (
 		<Tab.Navigator
 			screenOptions={{
@@ -385,6 +391,7 @@ function AppTabs({ route }) {
 			<Tab.Screen
 				name="SavedTab"
 				component={SavedStack}
+				initialParams={{allItems: allItems, userId: userId}}
 				options={{
 					tabBarIcon: ({ focused }) => {
 						if (focused) {

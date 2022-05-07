@@ -12,67 +12,57 @@ import { items } from "../constants/mockData";
 
 import { Card } from "../components";
 import React from "react";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 const { width } = Dimensions.get("screen");
 
 const thumbMeasure = (width - 48 - 32) / 3;
 const cardWidth = width - theme.SIZES.BASE * 2;
 
-class Saved extends React.Component {
-	render() {
-		return (
-			<Block flex center>
-				<ScrollView>
-					<Block flex style={styles.group}>
-						<Block flex>
-							<Block
-								style={{ paddingHorizontal: theme.SIZES.BASE }}
-							>
-								<Card item={items.i00001} horizontal />
-								<Card item={items.i00002} horizontal />
-								<Card item={items.i00003} horizontal />
-								<Card item={items.i00004} horizontal />
-								<Card item={items.i00005} horizontal />
-								<Card item={items.i00006} horizontal />
-								<Card item={items.i00007} horizontal />
-								<Card item={items.i00008} horizontal />
-								<Card item={items.i00009} horizontal />
-								<Card item={items.i00010} horizontal />
-								<Block flex card shadow style={styles.category}>
-									<ImageBackground
-										source={Images.CherryBlossom}
-										style={[
-											styles.imageBlock,
-											{
-												width:
-													width -
-													theme.SIZES.BASE * 2,
-												height: 252,
-											},
-										]}
-										imageStyle={{
+function Saved({ route, navigation }) {
+	const { allItems, savedItemIds } = route.params;
+
+	return (
+		<Block flex center>
+			<ScrollView>
+				<Block flex style={styles.group}>
+					<Block flex>
+						<Block style={{ paddingHorizontal: theme.SIZES.BASE }}>
+							{savedItemIds.map((itemId) => (
+								<Card item={allItems[itemId]} horizontal key={"saved_" + itemId}/>
+							))}
+							<Block flex card shadow style={styles.category}>
+								<ImageBackground
+									source={Images.CherryBlossom}
+									style={[
+										styles.imageBlock,
+										{
 											width: width - theme.SIZES.BASE * 2,
 											height: 252,
-										}}
-									>
-										<Block style={styles.categoryTitle}>
-											<Text
-												size={18}
-												bold
-												color={theme.COLORS.WHITE}
-											>
-												Explore More Items
-											</Text>
-										</Block>
-									</ImageBackground>
-								</Block>
+										},
+									]}
+									imageStyle={{
+										width: width - theme.SIZES.BASE * 2,
+										height: 252,
+									}}
+								>
+									<TouchableOpacity onPress={() => navigation.navigate("Home")} style={styles.categoryTitle}>
+										<Text
+											size={18}
+											bold
+											color={theme.COLORS.WHITE}
+										>
+											Explore More Items
+										</Text>
+									</TouchableOpacity>
+								</ImageBackground>
 							</Block>
 						</Block>
 					</Block>
-				</ScrollView>
-			</Block>
-		);
-	}
+				</Block>
+			</ScrollView>
+		</Block>
+	);
 }
 
 const styles = StyleSheet.create({
