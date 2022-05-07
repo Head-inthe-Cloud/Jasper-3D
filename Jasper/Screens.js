@@ -261,31 +261,6 @@ export default function LandingStack(props) {
 					cardStyle: { backgroundColor: "#F8F9FE" },
 				}}
 			/>
-
-			{/* The following 3 screens are development only, delete after development */}
-			<Stack.Screen
-				name="Elements"
-				component={Elements}
-				option={{
-					headerTransparent: true,
-				}}
-			/>
-			<Stack.Screen
-				name="Articles"
-				component={Articles}
-				option={{
-					headerTransparent: true,
-				}}
-			/>
-			<Stack.Screen
-				name="Profile"
-				component={Profile}
-				option={{
-					headerTransparent: true,
-				}}
-			/>
-			{/* Development screens above ^^^ */}
-
 			<Stack.Screen name="App" component={AppStack} />
 		</Stack.Navigator>
 	);

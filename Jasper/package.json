@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^13.0.0",
+    "@firebase/app": "^0.7.23",
+    "@firebase/auth": "^0.20.0",
+    "@firebase/firestore": "^3.4.9",
     "@react-native-community/masked-view": "^0.1.11",
     "@react-navigation/bottom-tabs": "^6.3.1",
     "@react-navigation/compat": "^5.3.20",

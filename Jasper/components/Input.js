@@ -16,7 +16,7 @@ function ArInput(props) {
 		!shadowless && styles.shadow,
 		success && styles.success,
 		error && styles.error,
-		{ ...this.props.style },
+		{ ...props.style },
 	];
 
 	return (
@@ -33,7 +33,7 @@ function ArInput(props) {
 					family="AntDesign"
 				/>
 			}
-			{...this.props}
+			{...props}
 		/>
 	);
 }

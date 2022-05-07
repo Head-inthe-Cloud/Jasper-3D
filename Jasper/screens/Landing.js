@@ -21,12 +21,12 @@ const Landing = (props) => {
 			<StatusBar hidden />
 			<Block flex center>
 				<ImageBackground
-					source={Images.Onboarding}
+					source={Images.Landing}
 					style={{ height, width, zIndex: 1 }}
 				/>
 			</Block>
 			<Block center>
-				<Image source={Images.LogoOnboarding} style={styles.logo} />
+				<Image source={Images.LogoLanding} style={styles.logo} />
 			</Block>
 			<Block flex space="between" style={styles.padded}>
 				<Block flex space="around" style={{ zIndex: 2 }}>
