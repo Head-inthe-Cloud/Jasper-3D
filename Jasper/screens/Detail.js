@@ -10,7 +10,7 @@ import {
 } from "react-native";
 //argon
 import { Theme } from "../constants/";
-import { items, users } from "../constants/mockData";
+import { users } from "../constants/mockData";
 
 import { Button, Card, Icon } from "../components/";
 
@@ -21,10 +21,10 @@ const { width } = Dimensions.get("screen");
 const thumbMeasure = (width - 48 - 32) / 3;
 const cardWidth = width - theme.SIZES.BASE * 2;
 
-class Detail extends React.Component {
-	renderImage = (imgUri) => {
-		const { navigation } = this.props;
+function Detail({ route, navigation }) {
+	const { allItems, itemId } = route.params;
 
+	const renderImage = (imgUri) => {
 		return (
 			<TouchableWithoutFeedback
 				style={{ zIndex: 3 }}
@@ -42,7 +42,7 @@ class Detail extends React.Component {
 		);
 	};
 
-	renderImageCarousel = (item) => {
+	const renderImageCarousel = (item) => {
 		return (
 			<ScrollView
 				horizontal={true}
@@ -56,221 +56,214 @@ class Detail extends React.Component {
 					paddingHorizontal: theme.SIZES.BASE / 2,
 				}}
 			>
-				{items && item.images.map((image) => this.renderImage(image))}
+				{allItems && item.images.map((image) => renderImage(image))}
 			</ScrollView>
 		);
 	};
 
-	renderCard = (item) => {
+	const renderCard = (otherItem) => {
 		return (
 			<Card
-				item={item}
-				style={styles.similarItems}
-				key={"similar" + item.itemId}
+				item={otherItem}
+				style={styles.otherItems}
+				key={"similar" + otherItem.itemId}
 			/>
 		);
 	};
 
-	render() {
-		const item = items.i00001;
-		const similarItems = Object.keys(items).map((key) => items[key]);
-		const sellerData = users[item.sellerId];
-		return (
-			<Block flex center>
-				<ScrollView showsVerticalScrollIndicator={false}>
-					<Block flex style={styles.group}>
-						<Block flex style={{ marginTop: theme.SIZES.BASE / 2 }}>
+	const item = allItems[itemId];
+	const sellerData = users[item.sellerId];
+	const otherItems = sellerData.postedItems.filter(key => key != itemId).map(key => allItems[key]);
+
+	return (
+		<Block flex center>
+			<ScrollView showsVerticalScrollIndicator={false}>
+				<Block flex style={styles.group}>
+					<Block flex style={{ marginTop: theme.SIZES.BASE / 2 }}>
+						<Block
+							flex
+							row
+							style={{
+								paddingHorizontal: theme.SIZES.BASE,
+								paddingBottom: theme.SIZES.BASE,
+							}}
+						>
+							<Block width={(width / 7) * 4}>
+								<Text
+									size={16}
+									color={Theme.COLORS.PRIMARY}
+									style={styles.productPrice}
+								>
+									{item.condition}
+								</Text>
+								<Text
+									size={34}
+									style={{ paddingHorizontal: 1 }}
+								>
+									{item.title}
+								</Text>
+							</Block>
+							<Block>
+								<Block flex row style={{ top: 15 }}>
+									<Image
+										source={{
+											uri: sellerData.avatar,
+										}}
+										style={styles.avatar}
+									/>
+									<Block>
+										<Text size={14} style={styles.userName}>
+											{sellerData.userName}
+										</Text>
+										<StarRating
+											disabled
+											rating={sellerData.rating}
+											starSize={18}
+											starStyle={styles.stars}
+											fullStarColor={"#FDCC0D"}
+										/>
+									</Block>
+								</Block>
+								<Block>
+									<Text size={24} style={styles.productPrice}>
+										{"$" + item.price.toFixed(2)}
+									</Text>
+								</Block>
+							</Block>
+						</Block>
+						{renderImageCarousel(item)}
+						<Block style={styles.descriptionBox}>
+							<Text
+								size={18}
+								color={theme.COLORS.BLACK}
+								style={styles.title}
+							>
+								Description:
+							</Text>
+							<Block>
+								<Text
+									size={16}
+									color={theme.COLORS.BLACK}
+									style={styles.productDescription}
+								>
+									{item.description}
+								</Text>
+							</Block>
 							<Block
 								flex
 								row
 								style={{
-									paddingHorizontal: theme.SIZES.BASE,
-									paddingBottom: theme.SIZES.BASE,
+									marginVertical: theme.SIZES.BASE,
+									left: theme.SIZES.BASE,
 								}}
 							>
-								<Block width={(width / 7) * 4}>
-									<Text
-										size={16}
-										color={Theme.COLORS.PRIMARY}
-										style={styles.productPrice}
-									>
-										{item.condition}
-									</Text>
-									<Text
-										size={34}
-										style={{ paddingHorizontal: 1 }}
-									>
-										{item.title}
-									</Text>
-								</Block>
-								<Block>
-									<Block flex row style={{ top: 15 }}>
-										<Image
-											source={{
-												uri: sellerData.avatar,
-											}}
-											style={styles.avatar}
-										/>
-										<Block>
-											<Text
-												size={14}
-												style={styles.userName}
-											>
-												{sellerData.userName}
-											</Text>
-											<StarRating
-												disabled
-												rating={sellerData.rating}
-												starSize={18}
-												starStyle={styles.stars}
-												fullStarColor={"#FDCC0D"}
-											/>
-										</Block>
-									</Block>
-									<Block>
-										<Text
-											size={24}
-											style={styles.productPrice}
-										>
-											{"$" + item.price.toFixed(2)}
-										</Text>
-									</Block>
-								</Block>
-							</Block>
-							{this.renderImageCarousel(item)}
-							<Block style={styles.descriptionBox}>
+								<Icon
+									name="location-pin"
+									family="MaterialIcons"
+									size={25}
+									color={Theme.COLORS.HEADER}
+								></Icon>
 								<Text
 									size={18}
-									color={theme.COLORS.BLACK}
-									style={styles.title}
+									style={{
+										fontWeight: "bold",
+										color: Theme.COLORS.HEADER,
+									}}
 								>
-									Description:
+									{" Pick Up: "}
 								</Text>
-								<Block>
-									<Text
-										size={16}
-										color={theme.COLORS.BLACK}
-										style={styles.productDescription}
-									>
-										{item.description}
-									</Text>
-								</Block>
-								<Block
-									flex
-									row
+								<Text
+									size={18}
 									style={{
-										marginVertical: theme.SIZES.BASE,
-										left: theme.SIZES.BASE,
+										color: Theme.COLORS.HEADER,
 									}}
 								>
-									<Icon
-										name="location-pin"
-										family="MaterialIcons"
-										size={25}
-										color={Theme.COLORS.HEADER}
-									></Icon>
-									<Text
-										size={18}
-										style={{
-											fontWeight: "bold",
-											color: Theme.COLORS.HEADER,
-										}}
-									>
-										{" Pick Up: "}
-									</Text>
-									<Text
-										size={18}
-										style={{
-											color: Theme.COLORS.HEADER,
-										}}
-									>
-										{item.pickUpLocation}
-									</Text>
-								</Block>
-								<Block
-									flex
-									row
-									style={{
-										left: theme.SIZES.BASE,
-									}}
-								>
-									<Icon
-										name="truck"
-										family="Feather"
-										size={25}
-										color={Theme.COLORS.HEADER}
-									></Icon>
-									<Text
-										size={18}
-										style={{
-											fontWeight: "bold",
-											color: Theme.COLORS.HEADER,
-										}}
-									>
-										{" Drop off: "}
-									</Text>
-									<Text
-										size={18}
-										style={{
-											color: Theme.COLORS.HEADER,
-										}}
-									>
-										{item.dropOff ? "Yes" : "No"}
-									</Text>
-								</Block>
+									{item.pickUpLocation}
+								</Text>
 							</Block>
 							<Block
-								center
+								flex
+								row
 								style={{
-									marginVertical: theme.SIZES.BASE,
-									bottom: theme.SIZES.BASE,
+									left: theme.SIZES.BASE,
 								}}
 							>
-								<Button
-									style={styles.button}
-									textStyle={{ fontSize: 20 }}
-								>
-									{"Chat with " + sellerData.userName}
-								</Button>
-							</Block>
-							<Block style={styles.descriptionBox}>
+								<Icon
+									name="truck"
+									family="Feather"
+									size={25}
+									color={Theme.COLORS.HEADER}
+								></Icon>
 								<Text
 									size={18}
-									color={theme.COLORS.BLACK}
-									style={styles.title}
+									style={{
+										fontWeight: "bold",
+										color: Theme.COLORS.HEADER,
+									}}
 								>
-									Similar Items:
+									{" Drop off: "}
+								</Text>
+								<Text
+									size={18}
+									style={{
+										color: Theme.COLORS.HEADER,
+									}}
+								>
+									{item.dropOff ? "Yes" : "No"}
 								</Text>
 							</Block>
-							<ScrollView
-								horizontal={true}
-								pagingEnabled={true}
-								decelerationRate={0}
-								scrollEventThrottle={16}
-								snapToAlignment="center"
-								showsHorizontalScrollIndicator={false}
-								snapToInterval={
-									cardWidth + theme.SIZES.BASE * 0.375
-								}
-								contentContainerStyle={{
-									paddingHorizontal: theme.SIZES.BASE / 2,
-								}}
-								style={{
-									backgroundColor: theme.COLORS.WHITE,
-									marginBottom: theme.SIZES.BASE * 2,
-								}}
-							>
-								{similarItems &&
-									similarItems.map((similarItem) =>
-										this.renderCard(similarItem)
-									)}
-							</ScrollView>
 						</Block>
+						<Block
+							center
+							style={{
+								marginVertical: theme.SIZES.BASE,
+								bottom: theme.SIZES.BASE,
+							}}
+						>
+							<Button
+								style={styles.button}
+								textStyle={{ fontSize: 20 }}
+							>
+								{"Chat with " + sellerData.userName}
+							</Button>
+						</Block>
+						<Block style={styles.descriptionBox}>
+							<Text
+								size={18}
+								color={theme.COLORS.BLACK}
+								style={styles.title}
+							>
+								Other Items posted by this Seller:
+							</Text>
+						</Block>
+						<ScrollView
+							horizontal={true}
+							pagingEnabled={true}
+							decelerationRate={0}
+							scrollEventThrottle={16}
+							snapToAlignment="center"
+							showsHorizontalScrollIndicator={false}
+							snapToInterval={
+								cardWidth + theme.SIZES.BASE * 0.375
+							}
+							contentContainerStyle={{
+								paddingHorizontal: theme.SIZES.BASE / 2,
+							}}
+							style={{
+								backgroundColor: theme.COLORS.WHITE,
+								marginBottom: theme.SIZES.BASE * 2,
+							}}
+						>
+							{otherItems &&
+								otherItems.map((otherItem) =>
+									renderCard(otherItem)
+								)}
+						</ScrollView>
 					</Block>
-				</ScrollView>
-			</Block>
-		);
-	}
+				</Block>
+			</ScrollView>
+		</Block>
+	);
 }
 
 const styles = StyleSheet.create({
@@ -366,7 +359,7 @@ const styles = StyleSheet.create({
 		top: 20,
 		left: 3,
 	},
-	similarItems: {
+	otherItems: {
 		width: 150,
 		marginRight: theme.SIZES.BASE,
 	},

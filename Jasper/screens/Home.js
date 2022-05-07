@@ -17,7 +17,7 @@ const { width } = Dimensions.get("screen");
 
 // Database
 
-const Home = ({route}) => {
+const Home = ({route, navigation}) => {
 	const {items} = route.params;
 
 	// sort items by date
@@ -69,25 +69,21 @@ const Home = ({route}) => {
 				<Block flex>
 					<Block style={{ paddingHorizontal: theme.SIZES.BASE }}>
 						<Block style={styles.rows}>
-							<TouchableOpacity
-								onPress={() => navigation.navigate("Pro")}
+							<Block
+								row
+								middle
+								space="between"
+								style={{ paddingTop: 7 }}
 							>
-								<Block
-									row
-									middle
-									space="between"
-									style={{ paddingTop: 7 }}
-								>
-									<Text h4 style={styles.title}>
-										Latest Posts
-									</Text>
-									<Icon
-										name="chevron-right"
-										family="entypo"
-										style={{ paddingRight: 5 }}
-									/>
-								</Block>
-							</TouchableOpacity>
+								<Text h4 style={styles.title}>
+									Latest Posts
+								</Text>
+								<Icon
+									name="chevron-right"
+									family="entypo"
+									style={{ paddingRight: 5 }}
+								/>
+							</Block>
 						</Block>
 					</Block>
 					{renderItems()}

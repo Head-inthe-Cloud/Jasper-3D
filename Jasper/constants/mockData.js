@@ -8,8 +8,8 @@ export const users = {
 		rating: 5.0,
 		paymentOptions:["PayPal", "Venmo", "WeChat", "Zelle"],
 		interests: ["Furniture", "Electronics"],
-		likedItems: ["i00005"],
-		postedItems: ["i00001"]
+		likedItems: ["i00005", "i00010"],
+		postedItems: ["i00001", "i00002", "i00003", "i00004"]
 	},
 	u00002: {
 		userId: "u00002",
@@ -20,8 +20,8 @@ export const users = {
 		rating: 5.0,
 		paymentOptions:["Venmo", "Zelle"],
 		interests: ["Furniture", "Electronics"],
-		likedItems: ["i00001, i00002"],
-		postedItems: []
+		likedItems: ["i00001", "i00002", "i00009"],
+		postedItems: ["i00005", "i00006", "i00007"]
 	},
 	u00003: {
 		userId: "u00003",
@@ -32,8 +32,8 @@ export const users = {
 		rating: 4.5730,
 		paymentOptions:["PayPal", "Venmo"],
 		interests: ["Fashion", "Sports"],
-		likedItems: ["i00003, i00009"],
-		postedItems: []
+		likedItems: ["i00003", "i00005"],
+		postedItems: ["i00008", "i00009", "i00010"]
 	},
 };
 
@@ -194,7 +194,7 @@ export const items = {
 	i00005: {
 		itemId: "i00005",
 		title: "Bowls and Forks",
-		sellerId: "u00001",
+		sellerId: "u00002",
 		createDate: "2022-04-21",
 		condition: "Brand New",
 		description: "Selling some old utencils",
@@ -238,7 +238,7 @@ export const items = {
 	},
 	i00008: {
 		itemId: "i00008",
-		sellerId: "u00002",
+		sellerId: "u00003",
 		createDate: "2022-04-18",
 		condition: "Brand New",
 		title: "PS4 Game Disks",
@@ -253,7 +253,7 @@ export const items = {
 	},
 	i00009: {
 		itemId: "i00009",
-		sellerId: "u00002",
+		sellerId: "u00003",
 		createDate: "2022-04-17",
 		condition: "Brand New",
 		title: "Yoga Mat",
@@ -268,7 +268,7 @@ export const items = {
 	},
 	i00010: {
 		itemId: "i00010",
-		sellerId: "u00002",
+		sellerId: "u00003",
 		createDate: "2022-04-16",
 		condition: "Brand New",
 		title: "30 LB Dog Food",

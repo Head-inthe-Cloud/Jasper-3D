@@ -32,7 +32,7 @@ import Chat from "./screens/Chat";
 import Chat2 from "./screens/Chat2";
 import PostDone from "./screens/PostDone";
 
-import { items, conversations } from "./constants/mockData";
+import { items, users, conversations } from "./constants/mockData";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -235,6 +235,7 @@ function HomeStack({ route }) {
 			<Stack.Screen
 				name="Detail"
 				component={Detail}
+				initialParams={{allItems: allItems}}
 				options={{
 					header: ({ navigation, scene }) => (
 						<Header
@@ -258,6 +259,15 @@ function LandingStack(props) {
 	useEffect(() => {
 		const db = getDatabase();
 		const allItemsRef = ref(db, "allItems");
+		const usersRef = ref(db, "users");
+
+		// Upload temp data to database
+		// *************************************
+		firebaseSet(usersRef, users);
+
+
+		// *************************************
+
 
 		const allItemsOffFunction = onValue(allItemsRef, (snapshot) => {
 			const newAllItems = snapshot.val();

@@ -52,7 +52,7 @@ function Card(props) {
 	return (
 		<Block row={horizontal} card flex style={cardContainer}>
 			<TouchableWithoutFeedback
-				onPress={() => navigation.navigate("Detail")}
+				onPress={() => navigation.navigate("Detail", {itemId: item.itemId})}
 			>
 				<Block flex style={imgContainer}>
 					<Image
@@ -62,7 +62,7 @@ function Card(props) {
 				</Block>
 			</TouchableWithoutFeedback>
 			<TouchableWithoutFeedback
-				onPress={() => navigation.navigate("Detail")}
+				onPress={() => navigation.navigate("Detail",  {itemId: item.itemId})}
 			>
 				<Block flex style={styles.cardDescription}>
 					<Text size={14} style={styles.cardTitle}>
