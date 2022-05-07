@@ -8,7 +8,8 @@ export const users = {
 		rating: 5.0,
 		paymentOptions:["PayPal", "Venmo", "WeChat", "Zelle"],
 		interests: ["Furniture", "Electronics"],
-		likedItems: ["i00001"],
+		likedItems: ["i00005"],
+		postedItems: ["i00001"]
 	},
 	u00002: {
 		userId: "u00002",
@@ -20,6 +21,7 @@ export const users = {
 		paymentOptions:["Venmo", "Zelle"],
 		interests: ["Furniture", "Electronics"],
 		likedItems: ["i00001, i00002"],
+		postedItems: []
 	},
 	u00003: {
 		userId: "u00003",
@@ -31,6 +33,7 @@ export const users = {
 		paymentOptions:["PayPal", "Venmo"],
 		interests: ["Fashion", "Sports"],
 		likedItems: ["i00003, i00009"],
+		postedItems: []
 	},
 };
 
@@ -128,6 +131,7 @@ export const items = {
 		itemId: "i00001",
 		title: "Black IKEA chair",
 		sellerId: "u00001",
+		createDate: "2022-04-25",
 		condition: "Brand New",
 		description:
 			"Black IKEA chair in good condition, used for a year. I am graudating from UW and moving out. You can pick this up at anytime in the day.",
@@ -144,6 +148,7 @@ export const items = {
 		itemId: "i00002",
 		title: "iMac with Keyboard and Mouse",
 		sellerId: "u00001",
+		createDate: "2022-04-24",
 		condition: "Brand New",
 		description:
 			"One and a half year old iMac, comes with Apple keyboard and Apple mouse",
@@ -159,6 +164,7 @@ export const items = {
 		itemId: "i00003",
 		title: "LANCOME Lipstick",
 		sellerId: "u00001",
+		createDate: "2022-04-23",
 		condition: "Brand New",
 		description:
 			"Brand new, I accidently bought the wrong color and never used it.",
@@ -174,6 +180,7 @@ export const items = {
 		itemId: "i00004",
 		title: "Comfy Hoodie",
 		sellerId: "u00001",
+		createDate: "2022-04-22",
 		condition: "Brand New",
 		description: "Nice comfy hoodie, 90% new",
 		images: [
@@ -188,6 +195,7 @@ export const items = {
 		itemId: "i00005",
 		title: "Bowls and Forks",
 		sellerId: "u00001",
+		createDate: "2022-04-21",
 		condition: "Brand New",
 		description: "Selling some old utencils",
 		images: [
@@ -201,6 +209,7 @@ export const items = {
 	i00006: {
 		itemId: "i00006",
 		sellerId: "u00002",
+		createDate: "2022-04-20",
 		condition: "Brand New",
 		title: "Blue Heart Earings",
 		description: "Pretty Earings, looks good with any clothes",
@@ -215,6 +224,7 @@ export const items = {
 	i00007: {
 		itemId: "i00007",
 		sellerId: "u00002",
+		createDate: "2022-04-19",
 		condition: "Brand New",
 		title: "Small Nightstand",
 		description: "Lightweight Wooden nightstand",
@@ -229,6 +239,7 @@ export const items = {
 	i00008: {
 		itemId: "i00008",
 		sellerId: "u00002",
+		createDate: "2022-04-18",
 		condition: "Brand New",
 		title: "PS4 Game Disks",
 		description: "50% off for all games, send me a message for price",
@@ -243,6 +254,7 @@ export const items = {
 	i00009: {
 		itemId: "i00009",
 		sellerId: "u00002",
+		createDate: "2022-04-17",
 		condition: "Brand New",
 		title: "Yoga Mat",
 		description: "Fairly clean yoga mat",
@@ -257,6 +269,7 @@ export const items = {
 	i00010: {
 		itemId: "i00010",
 		sellerId: "u00002",
+		createDate: "2022-04-16",
 		condition: "Brand New",
 		title: "30 LB Dog Food",
 		description: "Unopend dog food",

@@ -6,12 +6,60 @@ import {
 	TouchableOpacity,
 } from "react-native";
 import { Block, Text, theme } from "galio-framework";
-
+import {
+	getDatabase,
+	ref as dbRef,
+	onValue,
+	set as firebaseSet,
+} from "firebase/database";
 import { Card, Icon } from "../components";
-import { items } from "../constants/mockData";
 const { width } = Dimensions.get("screen");
 
-const Home = () => {
+// Database
+
+const Home = ({route}) => {
+	const {items} = route.params;
+
+	// sort items by date
+	let datePairs = Object.keys(items).map((key) => [
+		key,
+		items[key].createDate,
+	]);
+	datePairs.sort((first, second) => {
+		return second[1] - first[1];
+	});
+	const sortedItemKeys = datePairs.map((pair) => pair[0]);
+
+	const renderItems = () => {
+		let result = [];
+		for (let i = 0; i < Math.ceil(sortedItemKeys.length / 2); i++) {
+			const card1 = () => {
+				return (
+					<Card
+						item={items[sortedItemKeys[i * 2]]}
+						style={{ marginRight: theme.SIZES.BASE }}
+					/>
+				);
+			};
+
+			const card2 = () => {
+				if (i * 2 + 1 >= sortedItemKeys.length) {
+					return null;
+				} else {
+					return <Card item={items[sortedItemKeys[i * 2 + 1]]} />;
+				}
+			};
+
+			result.push(
+				<Block flex row>
+					{card1()}
+					{card2()}
+				</Block>
+			);
+		}
+		return result;
+	};
+
 	return (
 		<Block flex center style={styles.home}>
 			<ScrollView
@@ -42,41 +90,7 @@ const Home = () => {
 							</TouchableOpacity>
 						</Block>
 					</Block>
-					<Block flex row>
-						<Card
-							item={items.i00001}
-							style={{ marginRight: theme.SIZES.BASE }}
-						/>
-						<Card item={items.i00002} />
-					</Block>
-					<Block flex row>
-						<Card
-							item={items.i00003}
-							style={{ marginRight: theme.SIZES.BASE }}
-						/>
-						<Card item={items.i00004} />
-					</Block>
-					<Block flex row>
-						<Card
-							item={items.i00005}
-							style={{ marginRight: theme.SIZES.BASE }}
-						/>
-						<Card item={items.i00006} />
-					</Block>
-					<Block flex row>
-						<Card
-							item={items.i00007}
-							style={{ marginRight: theme.SIZES.BASE }}
-						/>
-						<Card item={items.i00008} />
-					</Block>
-					<Block flex row>
-						<Card
-							item={items.i00009}
-							style={{ marginRight: theme.SIZES.BASE }}
-						/>
-						<Card item={items.i00010} />
-					</Block>
+					{renderItems()}
 				</Block>
 			</ScrollView>
 		</Block>

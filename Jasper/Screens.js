@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Dimensions, StyleSheet, View, TouchableOpacity } from "react-native";
 // header for screens
 import { Header, Icon } from "./components";
@@ -5,6 +6,15 @@ import { Theme, tabs } from "./constants";
 
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
+// Firebase
+import { useAuthState } from "react-firebase-hooks/auth";
+import { getAuth } from "firebase/auth";
+import {
+	getDatabase,
+	ref,
+	set as firebaseSet,
+	onValue,
+} from "firebase/database";
 
 // screens
 import Landing from "./screens/Landing";
@@ -21,6 +31,8 @@ import MessageCenter from "./screens/MessageCenter";
 import Chat from "./screens/Chat";
 import Chat2 from "./screens/Chat2";
 import PostDone from "./screens/PostDone";
+
+import { items, conversations } from "./constants/mockData";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -95,6 +107,7 @@ function ChatStack(props) {
 		</Stack.Navigator>
 	);
 }
+
 function ProfileStack(props) {
 	return (
 		<Stack.Navigator
@@ -168,7 +181,33 @@ function PostStack(props) {
 	);
 }
 
-function HomeStack(props) {
+function HomeStack({ route }) {
+	const [searchText, setSearchText] = useState("");
+	const [selectedCategory, setSelectedCategory] = useState("All");
+
+	const { allItems } = route.params;
+
+	let filteredItems;
+	if (allItems) {
+		filteredItems = Object.keys(allItems).map((key) => allItems[key]);
+	} else {
+		filteredItems = [];
+	}
+
+	// handle category select
+	if (selectedCategory !== "All") {
+		filteredItems = filteredItems.filter((item) => {
+			return item.category === selectedCategory;
+		});
+	}
+
+	// handle search
+	filteredItems = filteredItems.filter((item) => {
+		return (
+			item.title.toLowerCase().includes(searchText.toLowerCase()) ||
+			item.description.toLowerCase().includes(searchText.toLowerCase())
+		);
+	});
 	return (
 		<Stack.Navigator
 			screenOptions={{
@@ -179,6 +218,7 @@ function HomeStack(props) {
 			<Stack.Screen
 				name="Home"
 				component={Home}
+				initialParams={{ items: allItems }}
 				options={{
 					header: ({ navigation, scene }) => (
 						<Header
@@ -210,7 +250,27 @@ function HomeStack(props) {
 	);
 }
 
-export default function LandingStack(props) {
+function LandingStack(props) {
+	// Database
+	const [user, loading] = useAuthState(getAuth());
+	const [allItems, setAllItems] = useState();
+
+	useEffect(() => {
+		const db = getDatabase();
+		const allItemsRef = ref(db, "allItems");
+
+		const allItemsOffFunction = onValue(allItemsRef, (snapshot) => {
+			const newAllItems = snapshot.val();
+			setAllItems(newAllItems);
+		});
+
+		function cleanUp() {
+			allItemsOffFunction();
+		}
+
+		return cleanUp;
+	}, []);
+
 	return (
 		<Stack.Navigator
 			screenOptions={{
@@ -261,12 +321,17 @@ export default function LandingStack(props) {
 					cardStyle: { backgroundColor: "#F8F9FE" },
 				}}
 			/>
-			<Stack.Screen name="App" component={AppStack} />
+			<Stack.Screen
+				name="App"
+				component={AppTabs}
+				initialParams={{ allItems: allItems }}
+			/>
 		</Stack.Navigator>
 	);
 }
 
-function AppStack(props) {
+function AppTabs({ route }) {
+	const { allItems } = route.params;
 	return (
 		<Tab.Navigator
 			screenOptions={{
@@ -279,6 +344,7 @@ function AppStack(props) {
 			<Tab.Screen
 				name="HomeTab"
 				component={HomeStack}
+				initialParams={{ allItems: allItems }}
 				options={{
 					tabBarIcon: ({ focused }) => {
 						if (focused) {
@@ -441,3 +507,5 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 });
+
+export default LandingStack;
