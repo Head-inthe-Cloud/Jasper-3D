@@ -29,11 +29,9 @@ import Recovery from "./screens/Recovery";
 import SignUp from "./screens/SignUp";
 import MessageCenter from "./screens/MessageCenter";
 import Chat from "./screens/Chat";
-import Chat2 from "./screens/Chat2";
 import PostDone from "./screens/PostDone";
 
-import { items, users, conversations } from "./constants/mockData";
-import { RotationGestureHandler } from "react-native-gesture-handler";
+import { items, users } from "./constants/mockData";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -56,8 +54,8 @@ const CustomTabBarButton = ({ children, onPress }) => (
 	</TouchableOpacity>
 );
 
-function SavedStack({route}) {
-	const {allItems, userId} = route.params; 
+function SavedStack({ route }) {
+	const { allItems, userId } = route.params;
 	const savedItemIds = users[userId].savedItems;
 
 	return (
@@ -70,7 +68,10 @@ function SavedStack({route}) {
 			<Stack.Screen
 				name="Saved"
 				component={Saved}
-				initialParams={{allItems: allItems, savedItemIds: savedItemIds}}
+				initialParams={{
+					allItems: allItems,
+					savedItemIds: savedItemIds,
+				}}
 				options={{
 					header: ({ navigation, scene }) => (
 						<Header
@@ -86,7 +87,9 @@ function SavedStack({route}) {
 	);
 }
 
-function ChatStack(props) {
+function ChatStack({ route }) {
+	const { allItems, conversations, userId } = route.params;
+
 	return (
 		<Stack.Navigator
 			screenOptions={{
@@ -97,11 +100,15 @@ function ChatStack(props) {
 			<Stack.Screen
 				name="MessageCenter"
 				component={MessageCenter}
+				initialParams={{
+					allItems: allItems,
+					conversations: conversations,
+					userId: userId,
+				}}
 				options={{
 					header: ({ navigation, scene }) => (
 						<Header
 							title="Message Center"
-							search
 							navigation={navigation}
 							scene={scene}
 						/>
@@ -143,7 +150,8 @@ function ProfileStack(props) {
 	);
 }
 
-function PostStack(props) {
+function PostStack({ route, navigation }) {
+	const { userId } = route.params;
 	return (
 		<Stack.Navigator
 			screenOptions={{
@@ -154,6 +162,7 @@ function PostStack(props) {
 			<Stack.Screen
 				name="Post"
 				component={Post}
+				initialParams={{userId: userId}}
 				options={{
 					header: ({ navigation, scene }) => (
 						<Header
@@ -190,7 +199,7 @@ function HomeStack({ route }) {
 	const [searchText, setSearchText] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState("All");
 
-	const { allItems } = route.params;
+	const { allItems, conversations, userId } = route.params;
 
 	let filteredItems;
 	if (allItems) {
@@ -213,6 +222,16 @@ function HomeStack({ route }) {
 			item.description.toLowerCase().includes(searchText.toLowerCase())
 		);
 	});
+
+	// Conversation Overview
+	const conversationList = Object.keys(conversations).map(
+		(key) => conversations[key]
+	);
+	const conversationsOverview = conversationList.map((conversation) => [
+		conversation.conversationId,
+		conversation.participants,
+	]);
+
 	return (
 		<Stack.Navigator
 			screenOptions={{
@@ -240,7 +259,11 @@ function HomeStack({ route }) {
 			<Stack.Screen
 				name="Detail"
 				component={Detail}
-				initialParams={{allItems: allItems}}
+				initialParams={{
+					allItems: allItems,
+					conversationsOverview: conversationsOverview,
+					userId: userId,
+				}}
 				options={{
 					header: ({ navigation, scene }) => (
 						<Header
@@ -261,17 +284,20 @@ function LandingStack(props) {
 	// const [userId, loading] = useAuthState(getAuth());
 
 	const userId = "u00001";
-	const [allItems, setAllItems] = useState();
+	const [allItems, setAllItems] = useState({});
+	const [users, setUsers] = useState({});
+	const [conversations, setConversations] = useState({});
 
 	useEffect(() => {
 		const db = getDatabase();
 		const allItemsRef = ref(db, "allItems");
 		const usersRef = ref(db, "users");
+		const conversationsRef = ref(db, "conversations");
 
 		// Upload temp data to database
-		// *************************************
-		firebaseSet(usersRef, users);
-
+		// ***************************f**********
+		// firebaseSet(usersRef, users);
+		// firebaseSet(allItemsRef, items);
 
 		// *************************************
 
@@ -280,8 +306,17 @@ function LandingStack(props) {
 			setAllItems(newAllItems);
 		});
 
+		const conversationsOffFunction = onValue(
+			conversationsRef,
+			(snapshot) => {
+				const newConversations = snapshot.val();
+				setConversations(newConversations);
+			}
+		);
+
 		function cleanUp() {
 			allItemsOffFunction();
+			conversationsOffFunction();
 		}
 
 		return cleanUp;
@@ -306,48 +341,57 @@ function LandingStack(props) {
 			<Stack.Screen name="Recovery" component={Recovery} />
 
 			<Stack.Screen
-				name="Chat"
-				component={Chat}
-				options={{
-					header: ({ navigation, scene }) => (
-						<Header
-							title="David"
-							back
-							navigation={navigation}
-							scene={scene}
-						/>
-					),
-					headerShown: true,
-					cardStyle: { backgroundColor: "#F8F9FE" },
-				}}
-			/>
-			<Stack.Screen
-				name="Chat2"
-				component={Chat2}
-				options={{
-					header: ({ navigation, scene }) => (
-						<Header
-							title="Josh"
-							back
-							navigation={navigation}
-							scene={scene}
-						/>
-					),
-					headerShown: true,
-					cardStyle: { backgroundColor: "#F8F9FE" },
-				}}
-			/>
-			<Stack.Screen
 				name="App"
 				component={AppTabs}
-				initialParams={{ allItems: allItems, userId: userId }}
+				initialParams={{
+					allItems: allItems,
+					userId: userId,
+					conversations: conversations,
+				}}
+			/>
+			<Stack.Screen
+				name="Chat"
+				component={Chat}
+				initialParams={{
+					allItems: allItems,
+					userId: userId,
+					conversations: conversations,
+				}}
+				options={{
+					header: ({ navigation, scene }) => (
+						<Header
+							title={"Chat"}
+							back
+							navigation={navigation}
+							scene={scene}
+						/>
+					),
+					headerShown: true,
+					cardStyle: { backgroundColor: "#F8F9FE" },
+				}}
+			/>
+			<Stack.Screen
+				name="Detail-Chat"
+				component={Detail}
+				initialParams={{ allItems: allItems }}
+				options={{
+					header: ({ navigation, scene }) => (
+						<Header
+							title="Detail"
+							back
+							navigation={navigation}
+							scene={scene}
+						/>
+					),
+					headerShown: true,
+				}}
 			/>
 		</Stack.Navigator>
 	);
 }
 
 function AppTabs({ route }) {
-	const { allItems, userId } = route.params;
+	const { allItems, userId, conversations } = route.params;
 	return (
 		<Tab.Navigator
 			screenOptions={{
@@ -360,7 +404,11 @@ function AppTabs({ route }) {
 			<Tab.Screen
 				name="HomeTab"
 				component={HomeStack}
-				initialParams={{ allItems: allItems }}
+				initialParams={{
+					allItems: allItems,
+					conversations: conversations,
+					userId: userId,
+				}}
 				options={{
 					tabBarIcon: ({ focused }) => {
 						if (focused) {
@@ -391,7 +439,7 @@ function AppTabs({ route }) {
 			<Tab.Screen
 				name="SavedTab"
 				component={SavedStack}
-				initialParams={{allItems: allItems, userId: userId}}
+				initialParams={{ allItems: allItems, userId: userId }}
 				options={{
 					tabBarIcon: ({ focused }) => {
 						if (focused) {
@@ -422,6 +470,7 @@ function AppTabs({ route }) {
 			<Tab.Screen
 				name="PostTab"
 				component={PostStack}
+				initialParams={{ userId: userId }}
 				options={{
 					tabBarIcon: ({ focused }) => (
 						<View>
@@ -439,6 +488,11 @@ function AppTabs({ route }) {
 			<Tab.Screen
 				name="ChatTab"
 				component={ChatStack}
+				initialParams={{
+					allItems: allItems,
+					userId: userId,
+					conversations: conversations,
+				}}
 				options={{
 					tabBarIcon: ({ focused }) => {
 						if (focused) {

@@ -201,6 +201,7 @@ class Header extends React.Component {
 			}
 		};
 		const { navigation } = this.props;
+		const { handleSearch } = this.props;
 		return (
 			<Input
 				right
@@ -208,7 +209,6 @@ class Header extends React.Component {
 				style={styles.search}
 				placeholder={searchPlaceHolder()}
 				placeholderTextColor={"#8898AA"}
-				onFocus={() => navigation.navigate("Pro")}
 				iconContent={
 					<Icon
 						size={16}
@@ -217,6 +217,7 @@ class Header extends React.Component {
 						family="ArgonExtra"
 					/>
 				}
+				onChangeText={(newText) => handleSearch(newText)}
 			/>
 		);
 	};

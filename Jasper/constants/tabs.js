@@ -1,28 +1,28 @@
 export default tabs = {
   categories: [
-    { id: 'all', title: 'All' },
-    { id: 'beauty', title: 'Beauty' },
-    { id: 'books', title: 'Books' },
-    { id: 'electronics', title: 'Electronics' },
-    { id: 'fashion', title: 'Fashion' },
-    { id: 'furniture', title: 'Furniture' },
-    { id: 'homeAndDecor', title: 'Home & Decor' },
-    { id: 'petSupplies', title: 'Pet Supplies' },
-    { id: 'sports', title: 'Sports' },
-    { id: 'UWMerch', title: 'UW Merch' },
-    { id: 'others', title: 'Others' },
+    { id: 'All', title: 'All' },
+    { id: 'Beauty', title: 'Beauty' },
+    { id: 'Books', title: 'Books' },
+    { id: 'Electronics', title: 'Electronics' },
+    { id: 'Fashion', title: 'Fashion' },
+    { id: 'Furniture', title: 'Furniture' },
+    { id: 'Home & Decor', title: 'Home & Decor' },
+    { id: 'Pet Supplies', title: 'Pet Supplies' },
+    { id: 'Sports', title: 'Sports' },
+    { id: 'UW Merch', title: 'UW Merch' },
+    { id: 'Others', title: 'Others' },
   ],
   conditions: [
-    { id: 'new', title: 'Brand New'},
-    { id: 'openBox', title: 'Open Box'},
-    { id: 'used', title: 'Used'},
-    { id: 'refurbished', title: 'Refurbished'},
-    { id: 'damaged', title: 'Partly Damaged'}
+    { id: 'Brand New', title: 'Brand New'},
+    { id: 'Open Box', title: 'Open Box'},
+    { id: 'Used', title: 'Used'},
+    { id: 'Refurbished', title: 'Refurbished'},
+    { id: 'Partly Damaged', title: 'Partly Damaged'}
   ],
   pickUpLocations: [
-    {id:"redSquare", title: "Red Square"},
-    {id:"oakHall", title: "Oak Hall"},
-    {id:"bookStore", title: "University Book Store"},
-    {id:"None", title: "Chat for details"}
+    {id:"Red Square", title: "Red Square"},
+    {id:"Oak Hall", title: "Oak Hall"},
+    {id:"University Book Store", title: "University Book Store"},
+    {id:"Chat for details", title: "Chat for details"}
   ],
 }

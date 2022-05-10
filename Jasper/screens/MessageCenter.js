@@ -1,4 +1,4 @@
-import React from "react";
+import { useState, useEffect } from "react";
 import {
 	StyleSheet,
 	Dimensions,
@@ -8,16 +8,13 @@ import {
 } from "react-native";
 import { Block, Text, theme } from "galio-framework";
 
-import { items, users, conversations } from "../constants/mockData";
+import { getDatabase, ref, onValue } from "firebase/database";
+
+import { items, users } from "../constants/mockData";
 import { Theme } from "../constants";
 const { width } = Dimensions.get("screen");
 
-const userId = users.u00001.userId;
-const conversationList = Object.keys(conversations).map(
-	(key) => conversations[key]
-);
-
-const renderConversation = (conversation, navigation) => {
+const renderConversation = (conversation, navigation, userId) => {
 	const subjectId =
 		conversation.participants[0] == userId
 			? conversation.participants[1]
@@ -55,12 +52,15 @@ const renderConversation = (conversation, navigation) => {
 		}
 	};
 
-	// Temp
-	const chatPage = subjectId == "u00002" ? "Chat" : "Chat2";
-
 	return (
 		<TouchableOpacity
-			onPress={() => navigation.navigate(chatPage)}
+			onPress={() =>
+				navigation.navigate("Chat", {
+					conversationId: conversation.conversationId,
+					userId: userId,
+					subjectId: subjectId,
+				})
+			}
 			key={conversation.conversationId}
 		>
 			<Block row middle space="between" style={{ paddingTop: 7 }}>
@@ -103,8 +103,35 @@ const renderConversation = (conversation, navigation) => {
 	);
 };
 
-const MessageCenter = (props) => {
-	const { navigation } = props;
+const MessageCenter = ({ route, navigation }) => {
+	// const { allItems, conversations, userId } = route.params;
+	const { allItems, userId } = route.params;
+
+	// Fetch data from database
+	const [conversations, setConversations] = useState({});
+	useEffect(() => {
+		const db = getDatabase();
+		const conversationsRef = ref(db, "conversations");
+
+		const conversationsOffFunction = onValue(
+			conversationsRef,
+			(snapshot) => {
+				const newConversations = snapshot.val();
+				setConversations(newConversations);
+			}
+		);
+
+		function cleanUp() {
+			conversationsOffFunction();
+		}
+
+		return cleanUp;
+	}, []); 
+
+	const conversationList = Object.keys(conversations)
+		.map((key) => conversations[key])
+		.filter((conversation) => conversation.participants.includes(userId));
+
 	return (
 		<Block flex center style={styles.home}>
 			<ScrollView
@@ -114,7 +141,11 @@ const MessageCenter = (props) => {
 				<Block flex>
 					<Block style={{ paddingHorizontal: theme.SIZES.BASE }}>
 						{conversationList.map((conversation) => {
-							return renderConversation(conversation, navigation);
+							return renderConversation(
+								conversation,
+								navigation,
+								userId
+							);
 						})}
 					</Block>
 				</Block>

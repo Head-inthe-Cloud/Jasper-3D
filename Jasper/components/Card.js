@@ -34,6 +34,8 @@ function Card(props) {
 	const handleUnlike = () => {
 		console.warn("Unlike");
 	};
+
+	
 	const UnlikeButton = () => {
 		return (
 			<Button
@@ -74,7 +76,7 @@ function Card(props) {
 						color={priceColor || Theme.COLORS.SECONDARY}
 						bold
 					>
-						{"$" + item.price.toFixed(2)}
+						{"$" + parseInt(item.price).toFixed(2)}
 					</Text>
 					{horizontal && UnlikeButton()}
 				</Block>

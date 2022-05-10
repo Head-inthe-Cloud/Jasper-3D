@@ -1,7 +1,8 @@
-import React from "react";
+import {useState, useEffect} from "react";
 //galio
 import { Block, Text, theme } from "galio-framework";
 import {
+	BackHandler,
 	Dimensions,
 	Image,
 	ScrollView,
@@ -10,9 +11,20 @@ import {
 } from "react-native";
 //argon
 import { Theme } from "../constants/";
-import { users } from "../constants/mockData";
+import { conversations, users } from "../constants/mockData";
 
 import { Button, Card, Icon } from "../components/";
+import Loading from "./Loading";
+
+// database
+import {
+	getDatabase,
+	ref as dbRef,
+	set as firebaseSet,
+	push as firebasePush,
+	onValue,
+	Database,
+} from "firebase/database";
 
 // Libraries
 import StarRating from "react-native-star-rating";
@@ -22,7 +34,24 @@ const thumbMeasure = (width - 48 - 32) / 3;
 const cardWidth = width - theme.SIZES.BASE * 2;
 
 function Detail({ route, navigation }) {
-	const { allItems, itemId } = route.params;
+	const {conversationsOverview, itemId, userId } = route.params;
+	const [allItems, setAllItems] = useState({});
+
+	useEffect(() => {
+		const db = getDatabase();
+		const allItemsRef = dbRef(db, "allItems");
+
+		const allItemsOffFunction = onValue(allItemsRef, (snapshot) => {
+			const newAllItems = snapshot.val();
+			setAllItems(newAllItems);
+		});
+
+		function cleanUp() {
+			allItemsOffFunction();
+		}
+
+		return cleanUp;
+	}, []);
 
 	const renderImage = (imgUri) => {
 		return (
@@ -72,198 +101,263 @@ function Detail({ route, navigation }) {
 	};
 
 	const item = allItems[itemId];
-	const sellerData = users[item.sellerId];
-	const otherItems = sellerData.postedItems.filter(key => key != itemId).map(key => allItems[key]);
 
-	return (
-		<Block flex center>
-			<ScrollView showsVerticalScrollIndicator={false}>
-				<Block flex style={styles.group}>
-					<Block flex style={{ marginTop: theme.SIZES.BASE / 2 }}>
-						<Block
-							flex
-							row
-							style={{
-								paddingHorizontal: theme.SIZES.BASE,
-								paddingBottom: theme.SIZES.BASE,
-							}}
-						>
-							<Block width={(width / 7) * 4}>
-								<Text
-									size={16}
-									color={Theme.COLORS.PRIMARY}
-									style={styles.productPrice}
-								>
-									{item.condition}
-								</Text>
-								<Text
-									size={34}
-									style={{ paddingHorizontal: 1 }}
-								>
-									{item.title}
-								</Text>
-							</Block>
-							<Block>
-								<Block flex row style={{ top: 15 }}>
-									<Image
-										source={{
-											uri: sellerData.avatar,
-										}}
-										style={styles.avatar}
-									/>
-									<Block>
-										<Text size={14} style={styles.userName}>
-											{sellerData.userName}
-										</Text>
-										<StarRating
-											disabled
-											rating={sellerData.rating}
-											starSize={18}
-											starStyle={styles.stars}
-											fullStarColor={"#FDCC0D"}
-										/>
-									</Block>
+	if(item){
+		const sellerData = users[item.sellerId];
+		const otherItems = sellerData.postedItems
+			.filter((key) => key != itemId)
+			.map((key) => allItems[key]);
+
+		const handleConversationStarter = async () => {
+			for (let i = 0; i < conversationsOverview.length; i++) {
+				// If the conversation already exists, navigate to that conversation
+				if (
+					conversationsOverview[i][1].includes(userId) &&
+					conversationsOverview[i][1].includes(sellerData.userId)
+				) {
+					navigation.navigate("Chat", {
+						conversationId: conversationsOverview[i][0],
+						userId: userId,
+						subjectId: sellerData.userId,
+					});
+					return;
+				}
+			}
+
+			// If the conversation does not exist, create a new conversation
+			let today = new Date(Date.now());
+			let newConversation = {
+				conversationId: null,
+				createdAt: today.toISOString(),
+				itemId: itemId,
+				messages: [
+					{
+						content: "Hi " + sellerData.userName + "!",
+						contentType: "text",
+						time: today.toISOString(),
+						userId: userId,
+					},
+				],
+				participants: [userId, sellerData.userId],
+				tradeEnded: false,
+				updatedAt: today.toISOString(),
+			};
+
+			const db = getDatabase();
+			const conversationRef = ref(db, "conversations");
+			const newConversationId = firebasePush(
+				conversationRef,
+				newConversation
+			).key;
+			newConversation.conversationId = newConversationId;
+
+			const newConversationRef = ref(
+				db,
+				"conversations/" + newConversationId
+			);
+			firebaseSet(newConversationRef, newConversation);
+			setTimeout(() => {
+				navigation.navigate("Chat", {
+					conversationId: newConversationId,
+					userId: userId,
+					subjectId: sellerData.userId,
+				});
+			}, 800);
+		};
+
+		return (
+			<Block flex center>
+				<ScrollView showsVerticalScrollIndicator={false}>
+					<Block flex style={styles.group}>
+						<Block flex style={{ marginTop: theme.SIZES.BASE / 2 }}>
+							<Block
+								flex
+								row
+								style={{
+									paddingHorizontal: theme.SIZES.BASE,
+									paddingBottom: theme.SIZES.BASE,
+								}}
+							>
+								<Block width={(width / 7) * 4}>
+									<Text
+										size={16}
+										color={Theme.COLORS.PRIMARY}
+										style={styles.productPrice}
+									>
+										{item.condition}
+									</Text>
+									<Text
+										size={34}
+										style={{ paddingHorizontal: 1 }}
+									>
+										{item.title}
+									</Text>
 								</Block>
 								<Block>
-									<Text size={24} style={styles.productPrice}>
-										{"$" + item.price.toFixed(2)}
+									<Block flex row style={{ top: 15 }}>
+										<Image
+											source={{
+												uri: sellerData.avatar,
+											}}
+											style={styles.avatar}
+										/>
+										<Block>
+											<Text size={14} style={styles.userName}>
+												{sellerData.userName}
+											</Text>
+											<StarRating
+												disabled
+												rating={sellerData.rating}
+												starSize={18}
+												starStyle={styles.stars}
+												fullStarColor={"#FDCC0D"}
+											/>
+										</Block>
+									</Block>
+									<Block>
+										<Text size={24} style={styles.productPrice}>
+											{"$" + parseInt(item.price).toFixed(2)}
+										</Text>
+									</Block>
+								</Block>
+							</Block>
+							{renderImageCarousel(item)}
+							<Block style={styles.descriptionBox}>
+								<Text
+									size={18}
+									color={theme.COLORS.BLACK}
+									style={styles.title}
+								>
+									Description:
+								</Text>
+								<Block>
+									<Text
+										size={16}
+										color={theme.COLORS.BLACK}
+										style={styles.productDescription}
+									>
+										{item.description}
+									</Text>
+								</Block>
+								<Block
+									flex
+									row
+									style={{
+										marginVertical: theme.SIZES.BASE,
+										left: theme.SIZES.BASE,
+									}}
+								>
+									<Icon
+										name="location-pin"
+										family="MaterialIcons"
+										size={25}
+										color={Theme.COLORS.HEADER}
+									></Icon>
+									<Text
+										size={18}
+										style={{
+											fontWeight: "bold",
+											color: Theme.COLORS.HEADER,
+										}}
+									>
+										{" Pick Up: "}
+									</Text>
+									<Text
+										size={18}
+										style={{
+											color: Theme.COLORS.HEADER,
+										}}
+									>
+										{item.pickUpLocation}
+									</Text>
+								</Block>
+								<Block
+									flex
+									row
+									style={{
+										left: theme.SIZES.BASE,
+									}}
+								>
+									<Icon
+										name="truck"
+										family="Feather"
+										size={25}
+										color={Theme.COLORS.HEADER}
+									></Icon>
+									<Text
+										size={18}
+										style={{
+											fontWeight: "bold",
+											color: Theme.COLORS.HEADER,
+										}}
+									>
+										{" Drop off: "}
+									</Text>
+									<Text
+										size={18}
+										style={{
+											color: Theme.COLORS.HEADER,
+										}}
+									>
+										{item.dropOff ? "Yes" : "No"}
 									</Text>
 								</Block>
 							</Block>
-						</Block>
-						{renderImageCarousel(item)}
-						<Block style={styles.descriptionBox}>
-							<Text
-								size={18}
-								color={theme.COLORS.BLACK}
-								style={styles.title}
-							>
-								Description:
-							</Text>
-							<Block>
-								<Text
-									size={16}
-									color={theme.COLORS.BLACK}
-									style={styles.productDescription}
-								>
-									{item.description}
-								</Text>
-							</Block>
 							<Block
-								flex
-								row
+								center
 								style={{
 									marginVertical: theme.SIZES.BASE,
-									left: theme.SIZES.BASE,
+									bottom: theme.SIZES.BASE,
 								}}
 							>
-								<Icon
-									name="location-pin"
-									family="MaterialIcons"
-									size={25}
-									color={Theme.COLORS.HEADER}
-								></Icon>
+								<Button
+									style={styles.button}
+									textStyle={{ fontSize: 20 }}
+									onPress={() => handleConversationStarter()}
+								>
+									{"Chat with " + sellerData.userName}
+								</Button>
+							</Block>
+							<Block style={styles.descriptionBox}>
 								<Text
 									size={18}
-									style={{
-										fontWeight: "bold",
-										color: Theme.COLORS.HEADER,
-									}}
+									color={theme.COLORS.BLACK}
+									style={styles.title}
 								>
-									{" Pick Up: "}
-								</Text>
-								<Text
-									size={18}
-									style={{
-										color: Theme.COLORS.HEADER,
-									}}
-								>
-									{item.pickUpLocation}
+									Other Items posted by this Seller:
 								</Text>
 							</Block>
-							<Block
-								flex
-								row
+							<ScrollView
+								horizontal={true}
+								pagingEnabled={true}
+								decelerationRate={0}
+								scrollEventThrottle={16}
+								snapToAlignment="center"
+								showsHorizontalScrollIndicator={false}
+								snapToInterval={
+									cardWidth + theme.SIZES.BASE * 0.375
+								}
+								contentContainerStyle={{
+									paddingHorizontal: theme.SIZES.BASE / 2,
+								}}
 								style={{
-									left: theme.SIZES.BASE,
+									backgroundColor: theme.COLORS.WHITE,
+									marginBottom: theme.SIZES.BASE * 2,
 								}}
 							>
-								<Icon
-									name="truck"
-									family="Feather"
-									size={25}
-									color={Theme.COLORS.HEADER}
-								></Icon>
-								<Text
-									size={18}
-									style={{
-										fontWeight: "bold",
-										color: Theme.COLORS.HEADER,
-									}}
-								>
-									{" Drop off: "}
-								</Text>
-								<Text
-									size={18}
-									style={{
-										color: Theme.COLORS.HEADER,
-									}}
-								>
-									{item.dropOff ? "Yes" : "No"}
-								</Text>
-							</Block>
+								{otherItems &&
+									otherItems.map((otherItem) =>
+										renderCard(otherItem)
+									)}
+							</ScrollView>
 						</Block>
-						<Block
-							center
-							style={{
-								marginVertical: theme.SIZES.BASE,
-								bottom: theme.SIZES.BASE,
-							}}
-						>
-							<Button
-								style={styles.button}
-								textStyle={{ fontSize: 20 }}
-							>
-								{"Chat with " + sellerData.userName}
-							</Button>
-						</Block>
-						<Block style={styles.descriptionBox}>
-							<Text
-								size={18}
-								color={theme.COLORS.BLACK}
-								style={styles.title}
-							>
-								Other Items posted by this Seller:
-							</Text>
-						</Block>
-						<ScrollView
-							horizontal={true}
-							pagingEnabled={true}
-							decelerationRate={0}
-							scrollEventThrottle={16}
-							snapToAlignment="center"
-							showsHorizontalScrollIndicator={false}
-							snapToInterval={
-								cardWidth + theme.SIZES.BASE * 0.375
-							}
-							contentContainerStyle={{
-								paddingHorizontal: theme.SIZES.BASE / 2,
-							}}
-							style={{
-								backgroundColor: theme.COLORS.WHITE,
-								marginBottom: theme.SIZES.BASE * 2,
-							}}
-						>
-							{otherItems &&
-								otherItems.map((otherItem) =>
-									renderCard(otherItem)
-								)}
-						</ScrollView>
 					</Block>
-				</Block>
-			</ScrollView>
-		</Block>
-	);
+				</ScrollView>
+			</Block>
+		);
+	} else {
+		return(<Loading />);
+	}
 }
 
 const styles = StyleSheet.create({

@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useState } from "react";
 
 //galio
 import { Block, Text, theme } from "galio-framework";
@@ -11,13 +11,27 @@ import {
 	TextInput,
 } from "react-native";
 
-
 // Components & Constants
 import { Button, Icon, Input, Switch } from "../components/";
-import { Theme, } from "../constants/";
+import { Theme } from "../constants/";
 import { items } from "../constants/mockData";
 import Tabs from "../components/Tabs";
 import tabs from "../constants/tabs";
+
+// Database
+// import {
+// 	ref as storageRef,
+// 	getStorage,
+// 	uploadBytes,
+// 	getDownloadURL,
+// } from "firebase/storage";
+import {
+	ref as dbRef,
+	getDatabase,
+	push as firebasePush,
+	set as firebaseSet,
+	onValue,
+} from "firebase/database";
 
 // Libraries
 import * as ImagePicker from "expo-image-picker";
@@ -28,30 +42,119 @@ const { width } = Dimensions.get("screen");
 const thumbMeasure = (width - 48 - 32) / 3;
 const cardWidth = width - theme.SIZES.BASE * 2;
 
-const Post = (props) => {
-	const [negotiableSwitch, setNegotiableSwitch] = React.useState(false);
-	const [dropOffSwitch, setDropOffSwitch] = React.useState(false);
-	const [UWVisibleSwitch, setUWVisibleSwitch] = React.useState(false);
-	const [descriptionInput, setDescriptionInput] = React.useState("");
-	const [imgUris, setImgUris] = React.useState([]);
+function Post({ route, navigation }) {
+	const { userId } = route.params;
+
+	const [title, setTitle] = useState("");
+	const [description, setDescription] = useState("");
+	const [price, setPrice] = useState(0);
+	const [mediaData, setMediaData] = useState([]);
+	const [category, setCategory] = useState(tabs.categories[0].id);
+	const [condition, setCondition] = useState(tabs.conditions[0].id);
+	const [location, setLocation] = useState(tabs.pickUpLocations[0].id);
+	const [negotiableSwitch, setNegotiableSwitch] = useState(false);
+	const [dropOffSwitch, setDropOffSwitch] = useState(false);
+	const [UWVisibleSwitch, setUWVisibleSwitch] = useState(false);
 	const iconSize = 25;
 	const iconBoxSize = 20;
-	const { navigation } = props;
+
+	const toggleSwitch = (switchName) => {
+		switch (switchName) {
+			case "dropOff":
+				setDropOffSwitch(!dropOffSwitch);
+				break;
+			case "negotiable":
+				setNegotiableSwitch(!negotiableSwitch);
+				break;
+			case "uw":
+				setUWVisibleSwitch(!UWVisibleSwitch);
+				break;
+			default:
+				break;
+		}
+	};
+
 	const handleChoosePhoto = async () => {
 		// console.warn("Choosing Photo");
 		const options = {
 			maxWidth: 300,
 			maxHeight: 300,
 			mediaType: "photo",
+			base64: true
 		};
 		const result = await ImagePicker.launchImageLibraryAsync({
-			mediaTypes: ImagePicker.MediaTypeOptions.All,
+			mediaTypes: ImagePicker.MediaTypeOptions.Images,
 			allowsEditing: true,
 			aspect: [4, 3],
 			quality: 1,
+			base64: true
 		});
 
-		setImgUris(imgUris.concat([result.uri]));
+		setMediaData(mediaData.concat([{uri: result.uri, data: 'data:image/jpeg;base64,' + result.base64}]));
+	};
+
+	const checkCompletion = () => {
+		if (title !== "" && description !== "" && price !== "") {
+			return true;
+		} else {
+			return false;
+		}
+	};
+
+	const handleSubmit = async () => {
+		if (checkCompletion()) {
+			let today = new Date(Date.now());
+			let newItem = {
+				itemId: "",
+				sellerId: userId,
+				createDate: today.toISOString().slice(0, -14),
+				condition: condition,
+				title: title,
+				description: description,
+				images: mediaData.map((data) => data.data),
+				price: price,
+				pickUpLocation: location,
+				dropOff: dropOffSwitch,
+				UWvisibility: UWVisibleSwitch,
+				negotiable: negotiableSwitch,
+			};
+
+			const db = getDatabase();
+			const allItemsRef = dbRef(db, "allItems");
+			const itemId = firebasePush(allItemsRef, newItem).key;
+
+			// The following code attempts to store data at firebase storage
+			// ****************************************************
+			// const storage = getStorage();
+			// const remoteUrls = await Promise.all(
+			// 	mediaData.map(async (data) => {
+			// 		const imgPath =
+			// 			"itemImages/" +
+			// 			itemId +
+			// 			"/" +
+			// 			data.uri.substring(data.uri.lastIndexOf("/") + 1, data.uri.lastIndexOf('.jp')) + '.B64';
+			// 		const itemImageRef = storageRef(storage, imgPath);
+			// 		await uploadBytes(itemImageRef, data.data).catch(error => {console.warn(error)});
+			// 		let remoteUrl = await getDownloadURL(itemImageRef).catch(error => {console.warn(error)});
+			// 		return remoteUrl;
+			// 	})
+			// ).catch(error => {
+			// 	console.warn(error)
+			// });
+
+			// Update item info
+			// newItem.images = remoteUrls;
+			// ****************************************************
+			newItem.itemId = itemId;
+			const itemRef = dbRef(db, "allItems/" + itemId);
+			firebaseSet(itemRef, newItem);
+
+			navigation.navigate("PostDone");
+			console.warn("Upload success");
+		} else {
+			// Temp
+			console.warn("Information incomplete");
+		}
 	};
 
 	const categoryTabs = () => {
@@ -61,7 +164,7 @@ const Post = (props) => {
 				<Tabs
 					data={tabs.categories || []}
 					initialIndex={defaultTab}
-					// onChange={(id) => navigation.setParams({ tabId: id })}
+					onChange={(id) => setCategory(id)}
 				/>
 			</Block>
 		);
@@ -74,7 +177,7 @@ const Post = (props) => {
 				<Tabs
 					data={tabs.conditions || []}
 					initialIndex={defaultTab}
-					// onChange={(id) => navigation.setParams({ tabId: id })}
+					onChange={(id) => setCondition(id)}
 				/>
 			</Block>
 		);
@@ -88,11 +191,12 @@ const Post = (props) => {
 				<Tabs
 					data={tabs.pickUpLocations || []}
 					initialIndex={defaultTab}
-					// onChange={(id) => navigation.setParams({ tabId: id })}
+					onChange={(id) => setLocation(id)}
 				/>
 			</Block>
 		);
 	};
+
 	return (
 		<Block flex>
 			<ScrollView showsVerticalScrollIndicator={false}>
@@ -104,21 +208,24 @@ const Post = (props) => {
 								placeholder="Name of your item"
 								iconContent={<Block />}
 								style={{ marginBottom: 10 }}
+								onChangeText={(text) => setTitle(text)}
 							/>
 						</Block>
 						<Block>
 							<Text style={styles.title}>Add Description</Text>
-							<TextInput
-								style={[styles.textInput, styles.shadow]}
-								placeholder="    Describe your item "
-								multiline={true}
-								numberOfLines={6}
-								maxLength={500}
-								onChangeText={(text) =>
-									setDescriptionInput(text)
-								}
-								value={descriptionInput}
-							></TextInput>
+							<Block style={[styles.textInput, styles.shadow]}>
+								<TextInput
+									style={{ color: Theme.COLORS.HEADER }}
+									placeholder="Describe your item "
+									multiline={true}
+									numberOfLines={6}
+									maxLength={500}
+									onChangeText={(text) =>
+										setDescription(text)
+									}
+									value={description}
+								></TextInput>
+							</Block>
 						</Block>
 						<Block style={styles.photoButton}>
 							<Text style={styles.title}>Photos</Text>
@@ -139,15 +246,15 @@ const Post = (props) => {
 									paddingHorizontal: theme.SIZES.BASE / 2,
 								}}
 							>
-								{imgUris.map((imgUri) => (
+								{mediaData.map((data) => (
 									<Block
 										flex
 										row
 										style={{ marginTop: 30 }}
-										key={imgUri}
+										key={data.uri}
 									>
 										<Image
-											source={{ uri: imgUri }}
+											source={{ uri: data.uri }}
 											style={{
 												width: 130,
 												height: 130,
@@ -264,6 +371,7 @@ const Post = (props) => {
 								style={{ width: 100 }}
 								fontSize={15}
 								fontWeight={"600"}
+								onChangeText={(text) => setPrice(text)}
 							/>
 						</Block>
 						<Block
@@ -287,7 +395,7 @@ const Post = (props) => {
 							</Block>
 							<Switch
 								value={negotiableSwitch}
-								onValueChange={() => setNegotiableSwitch(true)}
+								onValueChange={() => toggleSwitch("negotiable")}
 							/>
 						</Block>
 
@@ -312,7 +420,7 @@ const Post = (props) => {
 							</Block>
 							<Switch
 								value={dropOffSwitch}
-								onValueChange={() => setDropOffSwitch(true)}
+								onValueChange={() => toggleSwitch("dropOff")}
 							/>
 						</Block>
 						<Block
@@ -338,7 +446,7 @@ const Post = (props) => {
 							</Block>
 							<Switch
 								value={UWVisibleSwitch}
-								onValueChange={() => setUWVisibleSwitch(true)}
+								onValueChange={() => toggleSwitch("uw")}
 							/>
 						</Block>
 					</Block>
@@ -349,7 +457,7 @@ const Post = (props) => {
 								width: width - theme.SIZES.BASE * 2,
 								borderRadius: 30,
 							}}
-							onPress={() => navigation.navigate("PostDone")}
+							onPress={() => handleSubmit()}
 						>
 							Post Item
 						</Button>
@@ -358,7 +466,7 @@ const Post = (props) => {
 			</ScrollView>
 		</Block>
 	);
-};
+}
 
 const styles = StyleSheet.create({
 	title: {
@@ -433,6 +541,7 @@ const styles = StyleSheet.create({
 		borderRadius: 4,
 		borderColor: Theme.COLORS.BORDER,
 		height: 100,
+		paddingHorizontal: 15,
 	},
 	shadow: {
 		shadowColor: Theme.COLORS.BLACK,
