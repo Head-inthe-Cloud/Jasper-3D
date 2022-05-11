@@ -13,6 +13,7 @@ import {
 	getDatabase,
 	ref as dbRef,
 	set as firebaseSet,
+	onValue,
 } from "firebase/database";
 
 import { Button, Input } from "../components";
@@ -25,326 +26,442 @@ const { width } = Dimensions.get("screen");
 
 const Chat = ({ route, navigation }) => {
 	const [rating, setRating] = useState(0.0);
-	const [itemData, setItemData] = useState();
 	const [inputBoxHeight, setInputBoxHeight] = useState(90);
 	const [paymentToggled, setPaymentToggled] = useState(false);
+	const [textInput, setTextInput] = useState("");
 
-	const { allItems, conversations, conversationId, userId, subjectId } =
-		route.params;
+	const { allItems, conversationId, userId, subjectId } = route.params;
 
-	const conversation = conversations[conversationId];
-	const userData = users[userId];
-	const subjectData = users[subjectId];
-	const itemId = conversation.itemId;
-
+	const [conversations, setConversations] = useState();
 	useEffect(() => {
-		setItemData(allItems[itemId]);
+		const db = getDatabase();
+		const conversationsRef = dbRef(db, "conversations");
+
+		const conversationsOffFunction = onValue(
+			conversationsRef,
+			(snapshot) => {
+				const newConversations = snapshot.val();
+				setConversations(newConversations);
+			}
+		);
+
+		function cleanUp() {
+			conversationsOffFunction();
+		}
+
+		return cleanUp;
 	}, []);
 
-	const handleDeleteItem = (itemId) => {
-		const db = getDatabase();
-		const itemRef = dbRef(db, "allItems/" + itemId);
-		firebaseSet(itemRef, null);
-		setItemData(null);
-		console.warn("Item Deleted");
-	};
+	if (conversations) {
+		const conversation = conversations[conversationId];
+		const userData = users[userId];
+		const subjectData = users[subjectId];
+		const itemId = conversation.itemId;
+		let itemData = allItems[itemId];
 
-	const renderMessages = () => {
-		const messages = conversation.messages;
+		const handleDeleteItem = (itemId) => {
+			const db = getDatabase();
+			const itemRef = dbRef(db, "allItems/" + itemId);
+			firebaseSet(itemRef, null);
+			itemData = null;
+			console.warn("Item Deleted");
+		};
 
-		// const date = new Date(conversation.updatedAt);
-		// const displayedDate = () => {
-		// 	if (Date.now() - date.getMilliseconds() >= 86400000) {
-		// 		return (
-		// 			date.getFullYear() +
-		// 			"-" +
-		// 			date.getMonth() +
-		// 			"-" +
-		// 			date.getDate()
-		// 		);
-		// 	} else {
-		// 		return date.getHours() + ":" + date.getMinutes();
-		// 	}
-		// };
+		const renderMessages = () => {
+			const messages = conversation.messages;
 
-		return messages.map((message, idx) => {
-			const avatarUri = users[message.userId].avatar;
-			const SELF = 0;
-			const SUBJECT = 1;
-			const speaker = message.userId == userId ? SELF : SUBJECT;
-			const uw = users[message.userId].uw;
-			const uw_horz_offset = speaker == SELF ? 48 : 38;
-			const avatar = (
-				<Block>
-					<Image
-						source={{ uri: avatarUri }}
-						resizeMode="cover"
-						style={[
-							styles.avatar,
-							speaker == SELF
-								? { marginLeft: 10 }
-								: { marginRight: 10 },
-						]}
-					/>
-					{uw && (
+			// const date = new Date(conversation.updatedAt);
+			// const displayedDate = () => {
+			// 	if (Date.now() - date.getMilliseconds() >= 86400000) {
+			// 		return (
+			// 			date.getFullYear() +
+			// 			"-" +
+			// 			date.getMonth() +
+			// 			"-" +
+			// 			date.getDate()
+			// 		);
+			// 	} else {
+			// 		return date.getHours() + ":" + date.getMinutes();
+			// 	}
+			// };
+
+			return messages.map((message, idx) => {
+				const avatarUri = users[message.userId].avatar;
+				const SELF = 0;
+				const SUBJECT = 1;
+				const speaker = message.userId == userId ? SELF : SUBJECT;
+				const uw = users[message.userId].uw;
+				const uw_horz_offset = speaker == SELF ? 48 : 38;
+				const avatar = (
+					<Block>
 						<Image
-							source={require("../assets/imgs/uw.png")}
-							style={{
-								width: 25,
-								height: 15,
-								position: "absolute",
-								left: uw_horz_offset,
-								top: 43,
-							}}
+							source={{ uri: avatarUri }}
 							resizeMode="cover"
+							style={[
+								styles.avatar,
+								speaker == SELF
+									? { marginLeft: 10 }
+									: { marginRight: 10 },
+							]}
 						/>
+						{uw && (
+							<Image
+								source={require("../assets/imgs/uw.png")}
+								style={{
+									width: 25,
+									height: 15,
+									position: "absolute",
+									left: uw_horz_offset,
+									top: 43,
+								}}
+								resizeMode="cover"
+							/>
+						)}
+					</Block>
+				);
+
+				const messageBubble = (speaker) => {
+					const messageContent = () => {
+						if (message.contentType === "text") {
+							return <Text>{message.content}</Text>;
+						} else if (
+							message.contentType === "paymentInfo" ||
+							message.contentType === "image"
+						) {
+							return (
+								<Image
+									source={require("../assets/imgs/venmo-QR.png")}
+									style={{ height: 200, width: 200 }}
+								/>
+							);
+						}
+					};
+
+					return (
+						<Block flex>
+							{speaker === SUBJECT && (
+								<Text
+									style={{
+										left: 3,
+										color: Theme.COLORS.GRAY,
+									}}
+								>
+									{subjectData.userName}
+								</Text>
+							)}
+							<Block
+								style={[
+									styles.textBox,
+									styles.shadow,
+									speaker == SELF
+										? {
+												backgroundColor:
+													Theme.COLORS.LABEL,
+												marginLeft: 50,
+												alignSelf: "flex-end",
+										  }
+										: {
+												backgroundColor:
+													Theme.COLORS.BLOCK,
+												marginRight: 50,
+												alignSelf: "flex-start",
+										  },
+								]}
+							>
+								{messageContent()}
+							</Block>
+						</Block>
+					);
+				};
+
+				if (speaker == SELF) {
+					return (
+						<Block
+							row
+							middle
+							space="between"
+							style={{ paddingTop: 7, marginVertical: 5 }}
+							key={conversation.conversationId + "_" + idx}
+						>
+							{messageBubble(SELF)}
+							{avatar}
+						</Block>
+					);
+				} else {
+					return (
+						<Block
+							row
+							middle
+							space="between"
+							style={{ paddingTop: 7 }}
+							key={conversation.conversationId + "_" + idx}
+						>
+							{avatar}
+							{messageBubble(SUBJECT)}
+						</Block>
+					);
+				}
+			});
+		};
+
+		const togglePaymentOptions = () => {
+			const expandHeight = 280;
+			if (inputBoxHeight === 90) {
+				setInputBoxHeight(expandHeight);
+			} else {
+				setInputBoxHeight(90);
+			}
+		};
+
+		const toggleTextInput = (action) => {
+			const expandHeight = 400;
+			if (action === "up") {
+				setInputBoxHeight(expandHeight);
+			} else if (action === "down") {
+				setInputBoxHeight(90);
+			}
+		};
+
+		const handleSentMessage = () => {
+			const db = getDatabase();
+			const conversationRef = dbRef(
+				db,
+				"conversations/" + conversationId
+			);
+			const newConversation = conversation;
+			let newMessages = newConversation.messages;
+			let today = new Date(Date.now());
+			const newMessage = {
+				time: today.toISOString(),
+				contentType: "text",
+				content: textInput,
+				userId: userId,
+			};
+			newMessages.push(newMessage);
+			firebaseSet(conversationRef, newConversation);
+			setTextInput("");
+		};
+
+		const userInputBar = () => {
+			const paymentButton = () => {
+				if (paymentToggled) {
+					return (
+						<Button
+							onlyIcon
+							icon="keyboard-arrow-down"
+							iconFamily="MeterialIcons"
+							iconSize={20}
+							iconColor={theme.COLORS.BLACK}
+							color={"transparent"}
+							style={{
+								width: 30,
+								height: 30,
+								borderWidth: 2,
+								bottom: 5,
+							}}
+							onPress={() => {
+								setPaymentToggled(false);
+								togglePaymentOptions();
+							}}
+						/>
+					);
+				} else {
+					return (
+						<Button
+							onlyIcon
+							icon="payments"
+							iconFamily="MeterialIcons"
+							iconSize={20}
+							iconColor={theme.COLORS.BLACK}
+							color={"transparent"}
+							style={{
+								width: 30,
+								height: 30,
+								borderWidth: 2,
+								bottom: 5,
+							}}
+							onPress={() => {
+								setPaymentToggled(true);
+								togglePaymentOptions(
+									inputBoxHeight,
+									setInputBoxHeight
+								);
+							}}
+						/>
+					);
+				}
+			};
+			return (
+				<Block
+					style={[
+						styles.inputBox,
+						styles.shadow,
+						{ height: inputBoxHeight },
+					]}
+				>
+					<Block row top middle>
+						<Block
+							middle
+							style={{ marginLeft: 10, marginVertical: 10 }}
+						>
+							{paymentButton()}
+						</Block>
+						<Input
+							iconContent={<Block />}
+							placeholder=""
+							style={{
+								width: (width / 6) * 4 - 20,
+								marginHorizontal: 5,
+							}}
+							value={textInput}
+							onFocus={() => toggleTextInput("up")}
+							onBlur={() => toggleTextInput("down")}
+							onChangeText={(text) => setTextInput(text)}
+						></Input>
+						<Block style={{ marginRight: 1, marginVertical: 10 }}>
+							<Button
+								onlyIcon
+								icon="add-circle-outline"
+								iconFamily="MeterialIcons"
+								iconSize={34}
+								iconColor={theme.COLORS.BLACK}
+								color={"transparent"}
+								style={{ width: 30, height: 30, bottom: 5 }}
+							/>
+						</Block>
+						<Block style={{ marginVertical: 10 }}>
+							<Button
+								onlyIcon
+								icon="chevron-right"
+								iconFamily="Entypo"
+								iconSize={25}
+								iconColor={theme.COLORS.BLACK}
+								color={"transparent"}
+								style={{
+									width: 29,
+									height: 29,
+									borderWidth: 3,
+									right: 2,
+									bottom: 3,
+								}}
+								onPress={() => handleSentMessage()}
+							/>
+						</Block>
+					</Block>
+					{paymentToggled && (
+						<Block>
+							<Text style={styles.title}>
+								Send payment information
+							</Text>
+							<ScrollView
+								horizontal={true}
+								pagingEnabled={true}
+								decelerationRate={0}
+								scrollEventThrottle={16}
+								snapToAlignment="center"
+								showsHorizontalScrollIndicator={false}
+								snapToInterval={
+									width - theme.SIZES.BASE * 1.625
+								}
+								contentContainerStyle={{
+									paddingHorizontal: theme.SIZES.BASE / 2,
+								}}
+								style={{
+									marginBottom: theme.SIZES.BASE * 2,
+								}}
+							>
+								{userData.paymentOptions.map(
+									(paymentOption) => (
+										<TouchableOpacity
+											style={{}}
+											key={paymentOption}
+										>
+											<Image
+												source={
+													Images.PaymentOptionLogos[
+														paymentOption
+													]
+												}
+												style={{
+													width: 130,
+													height: 130,
+													marginHorizontal:
+														theme.SIZES.BASE,
+													borderRadius: 15,
+												}}
+											/>
+										</TouchableOpacity>
+									)
+								)}
+							</ScrollView>
+						</Block>
 					)}
 				</Block>
 			);
+		};
 
-			const messageBubble = (speaker) => {
-				const messageContent = () => {
-					if (message.contentType === "text") {
-						return <Text>{message.content}</Text>;
-					} else if (
-						message.contentType === "paymentInfo" ||
-						message.contentType === "image"
-					) {
-						return (
-							<Image
-								source={require("../assets/imgs/venmo-QR.png")}
-								style={{ height: 200, width: 200 }}
-							/>
-						);
-					}
-				};
-
+		const ratingBar = (rating, setRating) => {
+			if (itemData) {
 				return (
-					<Block flex>
-						{speaker === SUBJECT && (
+					<Block flex style={[styles.rating, styles.shadow]}>
+						<Text style={{ fontSize: 20 }}>
+							How would you rate your experience?
+						</Text>
+						<StarRating
+							rating={rating}
+							starSize={40}
+							starStyle={styles.stars}
+							fullStarColor={"#FDCC0D"}
+							selectedStar={(selectedRating) => {
+								setRating(selectedRating);
+							}}
+						/>
+						{rating != 0 && (
 							<Text
 								style={{
-									left: 3,
 									color: Theme.COLORS.GRAY,
+									fontSize: 20,
 								}}
 							>
-								{subjectData.userName}
+								Thank you for your feedback!
 							</Text>
 						)}
-						<Block
-							style={[
-								styles.textBox,
-								styles.shadow,
-								speaker == SELF
-									? {
-											backgroundColor: Theme.COLORS.LABEL,
-											marginLeft: 50,
-											alignSelf: "flex-end",
-									  }
-									: {
-											backgroundColor: Theme.COLORS.BLOCK,
-											marginRight: 50,
-											alignSelf: "flex-start",
-									  },
-							]}
-						>
-							{messageContent()}
+						<Block style={{ marginVertical: 10 }}></Block>
+						<Block>
+							<Button
+								style={styles.button}
+								textStyle={{ fontSize: 20 }}
+								onPress={() => handleRatingSubmission()}
+							>
+								Submit
+							</Button>
 						</Block>
-					</Block>
-				);
-			};
-
-			if (speaker == SELF) {
-				return (
-					<Block
-						row
-						middle
-						space="between"
-						style={{ paddingTop: 7, marginVertical: 5 }}
-						key={conversation.conversationId + "_" + idx}
-					>
-						{messageBubble(SELF)}
-						{avatar}
-					</Block>
-				);
-			} else {
-				return (
-					<Block
-						row
-						middle
-						space="between"
-						style={{ paddingTop: 7 }}
-						key={conversation.conversationId + "_" + idx}
-					>
-						{avatar}
-						{messageBubble(SUBJECT)}
-					</Block>
-				);
-			}
-		});
-	};
-
-	const togglePaymentOptions = (inputBoxHeight, setInputBoxHeight) => {
-		const expandHeight = 280;
-		if (inputBoxHeight === 90) {
-			setInputBoxHeight(expandHeight);
-		} else {
-			setInputBoxHeight(90);
-		}
-	};
-
-	const userInputBar = () => {
-		const paymentButton = () => {
-			if (paymentToggled) {
-				return (
-					<Button
-						onlyIcon
-						icon="keyboard-arrow-down"
-						iconFamily="MeterialIcons"
-						iconSize={20}
-						iconColor={theme.COLORS.BLACK}
-						color={"transparent"}
-						style={{ width: 30, height: 30, borderWidth: 2 }}
-						onPress={() => {
-							setPaymentToggled(false);
-							togglePaymentOptions(
-								inputBoxHeight,
-								setInputBoxHeight
-							);
-						}}
-					/>
-				);
-			} else {
-				return (
-					<Button
-						onlyIcon
-						icon="payments"
-						iconFamily="MeterialIcons"
-						iconSize={20}
-						iconColor={theme.COLORS.BLACK}
-						color={"transparent"}
-						style={{ width: 30, height: 30, borderWidth: 2 }}
-						onPress={() => {
-							setPaymentToggled(true);
-							togglePaymentOptions(
-								inputBoxHeight,
-								setInputBoxHeight
-							);
-						}}
-					/>
-				);
-			}
-		};
-		return (
-			<Block
-				style={[
-					styles.inputBox,
-					styles.shadow,
-					{ height: inputBoxHeight },
-				]}
-			>
-				<Block row top middle>
-					<Block
-						middle
-						style={{ marginLeft: 10, marginVertical: 10 }}
-					>
-						{paymentButton()}
-					</Block>
-					<Input
-						iconContent={<Block />}
-						placeholder=""
-						style={{
-							width: (width / 6) * 4 - 20,
-							marginHorizontal: 5,
-						}}
-					></Input>
-					<Block style={{ marginVertical: 10 }}>
+						{userId === itemData.sellerId && (
+							<Button
+								style={styles.button}
+								textStyle={{ fontSize: 20 }}
+								color={Theme.COLORS.ERROR}
+								onPress={() => {
+									handleDeleteItem(itemId);
+									handleRatingSubmission();
+								}}
+							>
+								Submit and Delete this Post
+							</Button>
+						)}
 						<Button
-							onlyIcon
-							icon="tag-faces"
-							iconFamily="MeterialIcons"
-							iconSize={30}
-							iconColor={theme.COLORS.BLACK}
-							color={"transparent"}
-							style={{ width: 30, height: 30 }}
-						/>
-					</Block>
-					<Block style={{ marginRight: 1, marginVertical: 10 }}>
-						<Button
-							onlyIcon
-							icon="add-circle-outline"
-							iconFamily="MeterialIcons"
-							iconSize={30}
-							iconColor={theme.COLORS.BLACK}
-							color={"transparent"}
-							style={{ width: 30, height: 30 }}
-						/>
-					</Block>
-				</Block>
-				{paymentToggled && (
-					<Block>
-						<Text style={styles.title}>
-							Send payment information
-						</Text>
-						<ScrollView
-							horizontal={true}
-							pagingEnabled={true}
-							decelerationRate={0}
-							scrollEventThrottle={16}
-							snapToAlignment="center"
-							showsHorizontalScrollIndicator={false}
-							snapToInterval={width - theme.SIZES.BASE * 1.625}
-							contentContainerStyle={{
-								paddingHorizontal: theme.SIZES.BASE / 2,
-							}}
-							style={{
-								marginBottom: theme.SIZES.BASE * 2,
-							}}
+							style={styles.button}
+							textStyle={{ fontSize: 20 }}
+							color={Theme.COLORS.ERROR}
+							onPress={() => navigation.navigate("Support")}
 						>
-							{userData.paymentOptions.map((paymentOption) => (
-								<TouchableOpacity
-									style={{}}
-									key={paymentOption}
-								>
-									<Image
-										source={
-											Images.PaymentOptionLogos[
-												paymentOption
-											]
-										}
-										style={{
-											width: 130,
-											height: 130,
-											marginHorizontal: theme.SIZES.BASE,
-											borderRadius: 15,
-										}}
-									/>
-								</TouchableOpacity>
-							))}
-						</ScrollView>
+							Report Issues
+						</Button>
 					</Block>
-				)}
-			</Block>
-		);
-	};
-
-	const ratingBar = (rating, setRating) => {
-		if (itemData) {
-			return (
-				<Block flex style={[styles.rating, styles.shadow]}>
-					<Text style={{ fontSize: 20 }}>
-						How would you rate your experience?
-					</Text>
-					<StarRating
-						rating={rating}
-						starSize={40}
-						starStyle={styles.stars}
-						fullStarColor={"#FDCC0D"}
-						selectedStar={(selectedRating) => {
-							setRating(selectedRating);
-						}}
-					/>
-					{rating != 0 && (
+				);
+			} else {
+				return (
+					<Block flex style={[styles.rating, styles.shadow]}>
 						<Text
 							style={{
 								color: Theme.COLORS.GRAY,
@@ -353,131 +470,90 @@ const Chat = ({ route, navigation }) => {
 						>
 							Thank you for your feedback!
 						</Text>
-					)}
-					<Block style={{ marginVertical: 10 }}></Block>
-					<Block>
-						<Button
-							style={styles.button}
-							textStyle={{ fontSize: 20 }}
-							onPress={() => handleRatingSubmission()}
-						>
-							Submit
-						</Button>
+						<Text style={{ fontSize: 20 }}>
+							This item has been deleted
+						</Text>
 					</Block>
-					{userId === itemData.sellerId && (
-						<Button
-							style={styles.button}
-							textStyle={{ fontSize: 20 }}
-							color={Theme.COLORS.ERROR}
-							onPress={() => {
-								handleDeleteItem(itemId);
-								handleRatingSubmission();
-							}}
-						>
-							Submit and Delete this Post
-						</Button>
-					)}
-					<Button
-						style={styles.button}
-						textStyle={{ fontSize: 20 }}
-						color={Theme.COLORS.ERROR}
-						onPress={() => navigation.navigate("Support")}
-					>
-						Report Issues
-					</Button>
-				</Block>
-			);
-		} else {
-			return (
-				<Block flex style={[styles.rating, styles.shadow]}>
-					<Text
-						style={{
-							color: Theme.COLORS.GRAY,
-							fontSize: 20,
-						}}
-					>
-						Thank you for your feedback!
-					</Text>
-					<Text style={{ fontSize: 20 }}>
-						This item has been deleted
-					</Text>
-				</Block>
-			);
-		}
-	};
+				);
+			}
+		};
 
-	return (
-		<Block flex center style={styles.home}>
-			<ScrollView
-				showsVerticalScrollIndicator={false}
-				contentContainerStyle={styles.articles}
-				style={{ overflow: "visible" }}
-			>
-				<Block
-					flex
-					style={[
-						styles.shadow,
-						{ paddingHorizontal: theme.SIZES.BASE / 2 },
-					]}
+		return (
+			<Block flex center style={styles.home}>
+				<ScrollView
+					showsVerticalScrollIndicator={false}
+					contentContainerStyle={styles.articles}
+					style={{ overflow: "visible" }}
 				>
-					{itemData && (
-						<TouchableOpacity
-							onPress={() =>
-								navigation.navigate("Detail-Chat", {
-									itemId: itemId,
-								})
-							}
-						>
-							<Block
-								row
-								center
-								style={[styles.topBox, styles.shadow]}
+					<Block
+						flex
+						style={[
+							styles.shadow,
+							{ paddingHorizontal: theme.SIZES.BASE / 2 },
+						]}
+					>
+						{itemData && (
+							<TouchableOpacity
+								onPress={() =>
+									navigation.navigate("Detail-Chat", {
+										itemId: itemId,
+									})
+								}
 							>
 								<Block
-									style={{
-										width: (width / 7) * 4.5,
-										paddingHorizontal: 10,
-									}}
+									row
+									center
+									style={[styles.topBox, styles.shadow]}
 								>
-									<Text
-										size={25}
-										style={{ paddingHorizontal: 1 }}
+									<Block
+										style={{
+											width: (width / 7) * 4.5,
+											paddingHorizontal: 10,
+										}}
 									>
-										{itemData.title}
-									</Text>
-									<Text
-										size={20}
-										color={Theme.COLORS.SECONDARY}
-										bold
-									>
-										{"$" +
-											parseFloat(itemData.price).toFixed(
-												2
-											)}
-									</Text>
+										<Text
+											size={25}
+											style={{ paddingHorizontal: 1 }}
+										>
+											{itemData.title}
+										</Text>
+										<Text
+											size={20}
+											color={Theme.COLORS.SECONDARY}
+											bold
+										>
+											{"$" +
+												parseFloat(
+													itemData.price
+												).toFixed(2)}
+										</Text>
+									</Block>
+									<Block style={{ width: (width / 7) * 1.5 }}>
+										<Image
+											source={{ uri: itemData.images[0] }}
+											resizeMode="cover"
+											style={styles.thumb}
+										/>
+									</Block>
 								</Block>
-								<Block style={{ width: (width / 7) * 1.5 }}>
-									<Image
-										source={{ uri: itemData.images[0] }}
-										resizeMode="cover"
-										style={styles.thumb}
-									/>
-								</Block>
-							</Block>
-						</TouchableOpacity>
-					)}
-				</Block>
-				<Block flex>
-					<Block style={{ marginVertical: 10 }}>
-						{renderMessages()}
+							</TouchableOpacity>
+						)}
 					</Block>
+					<Block flex>
+						<Block style={{ marginVertical: 10 }}>
+							{renderMessages()}
+						</Block>
 
-					{conversation.tradeEnded && ratingBar(rating, setRating)}
-				</Block>
-			</ScrollView>
-			{userInputBar()}
-		</Block>
-	);
+						{conversation.tradeEnded &&
+							ratingBar(rating, setRating)}
+					</Block>
+				</ScrollView>
+				{userInputBar()}
+			</Block>
+		);
+	} else {
+		return <Loading />;
+	}
 };
 
 const styles = StyleSheet.create({
