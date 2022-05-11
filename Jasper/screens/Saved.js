@@ -20,7 +20,8 @@ const thumbMeasure = (width - 48 - 32) / 3;
 const cardWidth = width - theme.SIZES.BASE * 2;
 
 function Saved({ route, navigation }) {
-	const { allItems, savedItemIds } = route.params;
+	const { allItems, userData } = route.params;
+	const savedItemIds = userData.savedItems;
 
 	return (
 		<Block flex center>
@@ -29,7 +30,7 @@ function Saved({ route, navigation }) {
 					<Block flex>
 						<Block style={{ paddingHorizontal: theme.SIZES.BASE }}>
 							{savedItemIds.map((itemId) => (
-								<Card item={allItems[itemId]} horizontal key={"saved_" + itemId}/>
+								<Card item={allItems[itemId]} horizontal key={"saved_" + itemId} userData={userData}/>
 							))}
 							<Block flex card shadow style={styles.category}>
 								<ImageBackground

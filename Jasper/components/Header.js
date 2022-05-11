@@ -78,7 +78,7 @@ function Header(props) {
 		const userRef = dbRef(db, "users/" + userId);
 
 		let newUserData = userData;
-		if (userData.savedItems.includes(itemId)) {
+		if (saved) {
 			newUserData.savedItems = newUserData.savedItems.filter(
 				(savedItemId) => savedItemId != itemId
 			);
@@ -91,7 +91,7 @@ function Header(props) {
 	};
 
 	const renderRight = () => {
-		const { white, title, navigation, route, userData } = props;
+		const { white, title, navigation } = props;
 
 		if (title === "Title") {
 			return [
