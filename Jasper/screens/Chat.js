@@ -1,4 +1,4 @@
-import React from "react";
+import { useState, useEffect, useDebugValue } from "react";
 import {
 	StyleSheet,
 	Dimensions,
@@ -8,26 +8,46 @@ import {
 } from "react-native";
 import { Block, Text, theme } from "galio-framework";
 
+// Database
+import {
+	getDatabase,
+	ref as dbRef,
+	set as firebaseSet,
+} from "firebase/database";
+
 import { Button, Input } from "../components";
 import { users, conversations } from "../constants/mockData";
 import { Theme, Images } from "../constants";
+import Loading from "./Loading";
 import StarRating from "react-native-star-rating";
+
 const { width } = Dimensions.get("screen");
 
 const Chat = ({ route, navigation }) => {
-	const [rating, setRating] = React.useState(0.0);
+	const [rating, setRating] = useState(0.0);
+	const [itemData, setItemData] = useState();
+	const [inputBoxHeight, setInputBoxHeight] = useState(90);
+	const [paymentToggled, setPaymentToggled] = useState(false);
 
-	const { allItems, conversations, conversationId, userId, subjectId } = route.params;
+	const { allItems, conversations, conversationId, userId, subjectId } =
+		route.params;
 
 	const conversation = conversations[conversationId];
-
-	const itemId = conversation.itemId;
-	const itemData = allItems[itemId];
-
 	const userData = users[userId];
 	const subjectData = users[subjectId];
-	const userRole = subjectId == "u00002" ? "seller" : "buyer";
+	const itemId = conversation.itemId;
 
+	useEffect(() => {
+		setItemData(allItems[itemId]);
+	}, []);
+
+	const handleDeleteItem = (itemId) => {
+		const db = getDatabase();
+		const itemRef = dbRef(db, "allItems/" + itemId);
+		firebaseSet(itemRef, null);
+		setItemData(null);
+		console.warn("Item Deleted");
+	};
 
 	const renderMessages = () => {
 		const messages = conversation.messages;
@@ -101,7 +121,16 @@ const Chat = ({ route, navigation }) => {
 
 				return (
 					<Block flex>
-						{speaker === SUBJECT && <Text style={{left: 3, color: Theme.COLORS.GRAY}}>{subjectData.userName}</Text>}
+						{speaker === SUBJECT && (
+							<Text
+								style={{
+									left: 3,
+									color: Theme.COLORS.GRAY,
+								}}
+							>
+								{subjectData.userName}
+							</Text>
+						)}
 						<Block
 							style={[
 								styles.textBox,
@@ -155,35 +184,6 @@ const Chat = ({ route, navigation }) => {
 		});
 	};
 
-	const ratingBar = (rating, setRating) => {
-		return (
-			<Block flex style={[styles.rating, styles.shadow]}>
-				<Text style={{ fontSize: 20 }}>
-					How would you rate your experience?
-				</Text>
-				<StarRating
-					rating={rating}
-					starSize={40}
-					starStyle={styles.stars}
-					fullStarColor={"#FDCC0D"}
-					selectedStar={(selectedRating) => {
-						setRating(selectedRating);
-					}}
-				/>
-				{rating != 0 && (
-					<Text
-						style={{
-							color: Theme.COLORS.GRAY,
-							fontSize: 20,
-						}}
-					>
-						Thank you for your feedback!
-					</Text>
-				)}
-			</Block>
-		);
-	};
-
 	const togglePaymentOptions = (inputBoxHeight, setInputBoxHeight) => {
 		const expandHeight = 280;
 		if (inputBoxHeight === 90) {
@@ -194,9 +194,6 @@ const Chat = ({ route, navigation }) => {
 	};
 
 	const userInputBar = () => {
-		const [inputBoxHeight, setInputBoxHeight] = React.useState(90);
-		const [paymentToggled, setPaymentToggled] = React.useState(false);
-
 		const paymentButton = () => {
 			if (paymentToggled) {
 				return (
@@ -247,7 +244,10 @@ const Chat = ({ route, navigation }) => {
 				]}
 			>
 				<Block row top middle>
-					<Block middle style={[styles.button, { marginLeft: 10 }]}>
+					<Block
+						middle
+						style={{ marginLeft: 10, marginVertical: 10 }}
+					>
 						{paymentButton()}
 					</Block>
 					<Input
@@ -258,7 +258,7 @@ const Chat = ({ route, navigation }) => {
 							marginHorizontal: 5,
 						}}
 					></Input>
-					<Block style={styles.button}>
+					<Block style={{ marginVertical: 10 }}>
 						<Button
 							onlyIcon
 							icon="tag-faces"
@@ -269,7 +269,7 @@ const Chat = ({ route, navigation }) => {
 							style={{ width: 30, height: 30 }}
 						/>
 					</Block>
-					<Block style={[styles.button, { marginRight: 10 }]}>
+					<Block style={{ marginRight: 1, marginVertical: 10 }}>
 						<Button
 							onlyIcon
 							icon="add-circle-outline"
@@ -327,6 +327,85 @@ const Chat = ({ route, navigation }) => {
 			</Block>
 		);
 	};
+
+	const ratingBar = (rating, setRating) => {
+		if (itemData) {
+			return (
+				<Block flex style={[styles.rating, styles.shadow]}>
+					<Text style={{ fontSize: 20 }}>
+						How would you rate your experience?
+					</Text>
+					<StarRating
+						rating={rating}
+						starSize={40}
+						starStyle={styles.stars}
+						fullStarColor={"#FDCC0D"}
+						selectedStar={(selectedRating) => {
+							setRating(selectedRating);
+						}}
+					/>
+					{rating != 0 && (
+						<Text
+							style={{
+								color: Theme.COLORS.GRAY,
+								fontSize: 20,
+							}}
+						>
+							Thank you for your feedback!
+						</Text>
+					)}
+					<Block style={{ marginVertical: 10 }}></Block>
+					<Block>
+						<Button
+							style={styles.button}
+							textStyle={{ fontSize: 20 }}
+							onPress={() => handleRatingSubmission()}
+						>
+							Submit
+						</Button>
+					</Block>
+					{userId === itemData.sellerId && (
+						<Button
+							style={styles.button}
+							textStyle={{ fontSize: 20 }}
+							color={Theme.COLORS.ERROR}
+							onPress={() => {
+								handleDeleteItem(itemId);
+								handleRatingSubmission();
+							}}
+						>
+							Submit and Delete this Post
+						</Button>
+					)}
+					<Button
+						style={styles.button}
+						textStyle={{ fontSize: 20 }}
+						color={Theme.COLORS.ERROR}
+						onPress={() => navigation.navigate("Support")}
+					>
+						Report Issues
+					</Button>
+				</Block>
+			);
+		} else {
+			return (
+				<Block flex style={[styles.rating, styles.shadow]}>
+					<Text
+						style={{
+							color: Theme.COLORS.GRAY,
+							fontSize: 20,
+						}}
+					>
+						Thank you for your feedback!
+					</Text>
+					<Text style={{ fontSize: 20 }}>
+						This item has been deleted
+					</Text>
+				</Block>
+			);
+		}
+	};
+
 	return (
 		<Block flex center style={styles.home}>
 			<ScrollView
@@ -341,68 +420,58 @@ const Chat = ({ route, navigation }) => {
 						{ paddingHorizontal: theme.SIZES.BASE / 2 },
 					]}
 				>
-					<TouchableOpacity
-						onPress={() =>
-							navigation.navigate("Detail-Chat", {
-								itemId: itemId,
-							})
-						}
-					>
-						<Block
-							row
-							center
-							style={[styles.topBox, styles.shadow]}
+					{itemData && (
+						<TouchableOpacity
+							onPress={() =>
+								navigation.navigate("Detail-Chat", {
+									itemId: itemId,
+								})
+							}
 						>
 							<Block
-								style={{
-									width: (width / 7) * 4.5,
-									paddingHorizontal: 10,
-								}}
+								row
+								center
+								style={[styles.topBox, styles.shadow]}
 							>
-								<Text
-									size={25}
-									style={{ paddingHorizontal: 1 }}
+								<Block
+									style={{
+										width: (width / 7) * 4.5,
+										paddingHorizontal: 10,
+									}}
 								>
-									{itemData.title}
-								</Text>
-								<Text
-									size={20}
-									color={Theme.COLORS.SECONDARY}
-									bold
-								>
-									{"$" + itemData.price.toFixed(2)}
-								</Text>
+									<Text
+										size={25}
+										style={{ paddingHorizontal: 1 }}
+									>
+										{itemData.title}
+									</Text>
+									<Text
+										size={20}
+										color={Theme.COLORS.SECONDARY}
+										bold
+									>
+										{"$" +
+											parseFloat(itemData.price).toFixed(
+												2
+											)}
+									</Text>
+								</Block>
+								<Block style={{ width: (width / 7) * 1.5 }}>
+									<Image
+										source={{ uri: itemData.images[0] }}
+										resizeMode="cover"
+										style={styles.thumb}
+									/>
+								</Block>
 							</Block>
-							<Block style={{ width: (width / 7) * 1.5 }}>
-								<Image
-									source={{ uri: itemData.images[0] }}
-									resizeMode="cover"
-									style={styles.thumb}
-								/>
-							</Block>
-						</Block>
-					</TouchableOpacity>
+						</TouchableOpacity>
+					)}
 				</Block>
 				<Block flex>
 					<Block style={{ marginVertical: 10 }}>
 						{renderMessages()}
 					</Block>
 
-					{/* {userRole == "buyer" && (
-						<Block
-							style={{
-								borderWidth: 10,
-								backgroundColor: Theme.COLORS.WARNING,
-							}}
-						>
-							<Button
-								style={styles.button}
-								textStyle={{ fontSize: 15, fontWeight: "600" }}
-							>
-								Pay the Seller
-							</Button>
-						</Block>
-					)} */}
 					{conversation.tradeEnded && ratingBar(rating, setRating)}
 				</Block>
 			</ScrollView>
@@ -419,7 +488,10 @@ const styles = StyleSheet.create({
 		borderWidth: 0,
 	},
 	button: {
-		marginVertical: 10,
+		marginVertical: theme.SIZES.BASE,
+		width: width - theme.SIZES.BASE * 6,
+		height: theme.SIZES.BASE * 3,
+		borderRadius: 30,
 	},
 	chatTitle: {
 		position: "absolute",

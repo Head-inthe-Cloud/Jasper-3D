@@ -80,17 +80,29 @@ function Post({ route, navigation }) {
 			maxWidth: 300,
 			maxHeight: 300,
 			mediaType: "photo",
-			base64: true
+			base64: true,
 		};
 		const result = await ImagePicker.launchImageLibraryAsync({
 			mediaTypes: ImagePicker.MediaTypeOptions.Images,
 			allowsEditing: true,
 			aspect: [4, 3],
 			quality: 1,
-			base64: true
+			base64: true,
 		});
 
-		setMediaData(mediaData.concat([{uri: result.uri, data: 'data:image/jpeg;base64,' + result.base64}]));
+		setMediaData(
+			mediaData.concat([
+				{
+					uri: result.uri,
+					data: "data:image/jpeg;base64," + result.base64,
+				},
+			])
+		);
+	};
+
+	const handleDeletePhoto = (idx) => {
+		let newMediaData = [... mediaData].filter((element, i) => i !== idx);
+		setMediaData(newMediaData);
 	};
 
 	const checkCompletion = () => {
@@ -246,7 +258,7 @@ function Post({ route, navigation }) {
 									paddingHorizontal: theme.SIZES.BASE / 2,
 								}}
 							>
-								{mediaData.map((data) => (
+								{mediaData.map((data, idx) => (
 									<Block
 										flex
 										row
@@ -263,23 +275,25 @@ function Post({ route, navigation }) {
 												borderRadius: 15,
 											}}
 										/>
-										<TouchableOpacity
-											onPress={() =>
-												console.warn("Delete Image")
-											}
+										<Button
+											onlyIcon
+											icon="closecircleo"
+											iconFamily="AntDesign"
+											iconSize={30}
+											iconColor={Theme.COLORS.ERROR}
+											color={Theme.COLORS.WHITE}
 											style={{
 												position: "absolute",
-												right: 5,
-												bottom: 110,
+												right: 110,
+												bottom: 95,
+												width: 40,
+												height: 40,
+
 											}}
-										>
-											<Icon
-												name="closecircleo"
-												family="AntDesign"
-												size={30}
-												color={Theme.COLORS.ERROR}
-											></Icon>
-										</TouchableOpacity>
+											onPress={() => {
+												handleDeletePhoto(idx)
+											}}
+										/>
 									</Block>
 								))}
 							</ScrollView>

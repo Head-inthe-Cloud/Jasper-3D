@@ -373,7 +373,7 @@ function LandingStack(props) {
 			<Stack.Screen
 				name="Detail-Chat"
 				component={Detail}
-				initialParams={{ allItems: allItems }}
+				initialParams={{ allItems: allItems, userId: userId }}
 				options={{
 					header: ({ navigation, scene }) => (
 						<Header

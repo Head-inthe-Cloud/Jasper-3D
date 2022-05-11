@@ -1,4 +1,4 @@
-import {useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 //galio
 import { Block, Text, theme } from "galio-framework";
 import {
@@ -23,7 +23,6 @@ import {
 	set as firebaseSet,
 	push as firebasePush,
 	onValue,
-	Database,
 } from "firebase/database";
 
 // Libraries
@@ -34,7 +33,7 @@ const thumbMeasure = (width - 48 - 32) / 3;
 const cardWidth = width - theme.SIZES.BASE * 2;
 
 function Detail({ route, navigation }) {
-	const {conversationsOverview, itemId, userId } = route.params;
+	const { conversationsOverview, itemId, userId } = route.params;
 	const [allItems, setAllItems] = useState({});
 
 	useEffect(() => {
@@ -52,6 +51,14 @@ function Detail({ route, navigation }) {
 
 		return cleanUp;
 	}, []);
+
+	const handleDeleteItem = (itemId) => {
+		const db = getDatabase();
+		const itemRef = dbRef(db, "allItems/" + itemId);
+		firebaseSet(itemRef, null);
+		navigation.goBack();
+		console.warn("Item Deleted");
+	};
 
 	const renderImage = (imgUri) => {
 		return (
@@ -100,9 +107,11 @@ function Detail({ route, navigation }) {
 		);
 	};
 
+
+
 	const item = allItems[itemId];
 
-	if(item){
+	if (item) {
 		const sellerData = users[item.sellerId];
 		const otherItems = sellerData.postedItems
 			.filter((key) => key != itemId)
@@ -144,14 +153,14 @@ function Detail({ route, navigation }) {
 			};
 
 			const db = getDatabase();
-			const conversationRef = ref(db, "conversations");
+			const conversationRef = dbRef(db, "conversations");
 			const newConversationId = firebasePush(
 				conversationRef,
 				newConversation
 			).key;
 			newConversation.conversationId = newConversationId;
 
-			const newConversationRef = ref(
+			const newConversationRef = dbRef(
 				db,
 				"conversations/" + newConversationId
 			);
@@ -202,7 +211,10 @@ function Detail({ route, navigation }) {
 											style={styles.avatar}
 										/>
 										<Block>
-											<Text size={14} style={styles.userName}>
+											<Text
+												size={14}
+												style={styles.userName}
+											>
 												{sellerData.userName}
 											</Text>
 											<StarRating
@@ -215,8 +227,12 @@ function Detail({ route, navigation }) {
 										</Block>
 									</Block>
 									<Block>
-										<Text size={24} style={styles.productPrice}>
-											{"$" + parseInt(item.price).toFixed(2)}
+										<Text
+											size={24}
+											style={styles.productPrice}
+										>
+											{"$" +
+												parseFloat(item.price).toFixed(2)}
 										</Text>
 									</Block>
 								</Block>
@@ -310,13 +326,29 @@ function Detail({ route, navigation }) {
 									bottom: theme.SIZES.BASE,
 								}}
 							>
-								<Button
-									style={styles.button}
-									textStyle={{ fontSize: 20 }}
-									onPress={() => handleConversationStarter()}
-								>
-									{"Chat with " + sellerData.userName}
-								</Button>
+								{userId !== sellerData.userId && (
+									<Button
+										style={styles.button}
+										textStyle={{ fontSize: 20 }}
+										onPress={() =>
+											handleConversationStarter()
+										}
+									>
+										{"Chat with " + sellerData.userName}
+									</Button>
+								)}
+								{userId === sellerData.userId && (
+									<Button
+										style={styles.button}
+										textStyle={{ fontSize: 20 }}
+										color={Theme.COLORS.ERROR}
+										onPress={() =>
+											handleDeleteItem(itemId)
+										}
+									>
+										Delete This Post
+									</Button>
+								)}
 							</Block>
 							<Block style={styles.descriptionBox}>
 								<Text
@@ -356,7 +388,7 @@ function Detail({ route, navigation }) {
 			</Block>
 		);
 	} else {
-		return(<Loading />);
+		return <Loading />;
 	}
 }
 

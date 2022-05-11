@@ -76,7 +76,7 @@ function Card(props) {
 						color={priceColor || Theme.COLORS.SECONDARY}
 						bold
 					>
-						{"$" + parseInt(item.price).toFixed(2)}
+						{"$" + parseFloat(item.price).toFixed(2)}
 					</Text>
 					{horizontal && UnlikeButton()}
 				</Block>
