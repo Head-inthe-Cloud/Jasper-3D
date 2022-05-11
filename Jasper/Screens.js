@@ -199,7 +199,9 @@ function HomeStack({ route }) {
 	const [searchText, setSearchText] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState("All");
 
-	const { allItems, conversations, userId } = route.params;
+	const { allItems, conversations, users, userId } = route.params;
+
+
 
 	let filteredItems;
 	if (allItems) {
@@ -265,12 +267,14 @@ function HomeStack({ route }) {
 					userId: userId,
 				}}
 				options={{
-					header: ({ navigation, scene }) => (
+					header: ({ navigation, scene, route }) => (
 						<Header
 							title="Detail"
 							back
 							navigation={navigation}
 							scene={scene}
+							route={route}
+							userData={users[userId]}
 						/>
 					),
 				}}
@@ -314,9 +318,15 @@ function LandingStack(props) {
 			}
 		);
 
+		const usersOffFunction = onValue(usersRef, (snapshot) => {
+			const newUsers = snapshot.val();
+			setUsers(newUsers);
+		})
+
 		function cleanUp() {
 			allItemsOffFunction();
 			conversationsOffFunction();
+			usersOffFunction();
 		}
 
 		return cleanUp;
@@ -345,8 +355,9 @@ function LandingStack(props) {
 				component={AppTabs}
 				initialParams={{
 					allItems: allItems,
-					userId: userId,
 					conversations: conversations,
+					users: users,
+					userId: userId,
 				}}
 			/>
 			<Stack.Screen
@@ -373,17 +384,22 @@ function LandingStack(props) {
 			<Stack.Screen
 				name="Detail-Chat"
 				component={Detail}
-				initialParams={{ allItems: allItems, userId: userId }}
+				initialParams={{
+					allItems: allItems,
+					userId: userId,
+				}}
 				options={{
-					header: ({ navigation, scene }) => (
+					header: ({ navigation, scene, route }) => (
 						<Header
 							title="Detail"
 							back
 							navigation={navigation}
 							scene={scene}
+							route={route}
+							userData={users[userId]}
 						/>
 					),
-					headerShown: true,
+					headerShown: true
 				}}
 			/>
 		</Stack.Navigator>
@@ -391,7 +407,7 @@ function LandingStack(props) {
 }
 
 function AppTabs({ route }) {
-	const { allItems, userId, conversations } = route.params;
+	const { allItems, conversations, users, userId } = route.params;
 	return (
 		<Tab.Navigator
 			screenOptions={{
@@ -407,6 +423,7 @@ function AppTabs({ route }) {
 				initialParams={{
 					allItems: allItems,
 					conversations: conversations,
+					users: users,
 					userId: userId,
 				}}
 				options={{
