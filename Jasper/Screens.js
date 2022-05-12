@@ -11,7 +11,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { getAuth } from "firebase/auth";
 import {
 	getDatabase,
-	ref,
+	ref as dbRef,
 	set as firebaseSet,
 	onValue,
 } from "firebase/database";
@@ -55,8 +55,7 @@ const CustomTabBarButton = ({ children, onPress }) => (
 );
 
 function SavedStack({ route }) {
-	const { allItems, users, userId} = route.params;
-
+	const { allItems, userData } = route.params;
 
 	return (
 		<Stack.Navigator
@@ -70,7 +69,7 @@ function SavedStack({ route }) {
 				component={Saved}
 				initialParams={{
 					allItems: allItems,
-					userData: users[userId]
+					userData: userData
 				}}
 				options={{
 					header: ({ navigation, scene }) => (
@@ -120,7 +119,9 @@ function ChatStack({ route }) {
 	);
 }
 
-function ProfileStack(props) {
+function ProfileStack({route, navigation}) {
+	const {allItems, userId} = route.params;
+
 	return (
 		<Stack.Navigator
 			initialRouteName="Profile"
@@ -132,6 +133,7 @@ function ProfileStack(props) {
 			<Stack.Screen
 				name="Profile"
 				component={Profile}
+				initialParams={{allItems: allItems, userId: userId}}
 				options={{
 					header: ({ navigation, scene }) => (
 						<Header
@@ -294,9 +296,9 @@ function LandingStack(props) {
 
 	useEffect(() => {
 		const db = getDatabase();
-		const allItemsRef = ref(db, "allItems");
-		const usersRef = ref(db, "users");
-		const conversationsRef = ref(db, "conversations");
+		const allItemsRef = dbRef(db, "allItems");
+		const usersRef = dbRef(db, "users");
+		const conversationsRef = dbRef(db, "conversations");
 
 		// Upload temp data to database
 		// ***************************f**********
@@ -408,6 +410,7 @@ function LandingStack(props) {
 
 function AppTabs({ route }) {
 	const { allItems, conversations, users, userId } = route.params;
+	const userData = users[userId];
 	return (
 		<Tab.Navigator
 			screenOptions={{
@@ -456,7 +459,7 @@ function AppTabs({ route }) {
 			<Tab.Screen
 				name="SavedTab"
 				component={SavedStack}
-				initialParams={{ allItems: allItems, userId: userId, users: users }}
+				initialParams={{ allItems: allItems, userData: userData }}
 				options={{
 					tabBarIcon: ({ focused }) => {
 						if (focused) {
@@ -540,6 +543,7 @@ function AppTabs({ route }) {
 			<Tab.Screen
 				name="ProfileTab"
 				component={ProfileStack}
+				initialParams={{allItems: allItems, userId: userId}}
 				options={{
 					tabBarIcon: ({ focused }) => {
 						if (focused) {

@@ -9,7 +9,9 @@ export const users = {
 		paymentOptions:["PayPal", "Venmo", "WeChat", "Zelle"],
 		interests: ["Furniture", "Electronics"],
 		savedItems: ["i00005", "i00010"],
-		postedItems: ["i00001", "i00002", "i00003", "i00004"]
+		postedItems: ["i00001", "i00002", "i00003", "i00004"],
+		intro: "I am a third year undergraduate at UW, I study Math and Philosophy. I have a bunny called Bailey and I love painting!",
+		location: "U-district"
 	},
 	u00002: {
 		userId: "u00002",

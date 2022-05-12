@@ -117,19 +117,6 @@ function Header(props) {
 						saved={saved}
 					/>,
 				];
-			case "Profile":
-				return [
-					<ChatButton
-						key="chat-profile"
-						navigation={navigation}
-						isWhite={white}
-					/>,
-					<HeartButton
-						key="basket-deals"
-						navigation={navigation}
-						isWhite={white}
-					/>,
-				];
 			default:
 				break;
 		}
