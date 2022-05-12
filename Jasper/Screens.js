@@ -69,7 +69,7 @@ function SavedStack({ route }) {
 				component={Saved}
 				initialParams={{
 					allItems: allItems,
-					userData: userData
+					userData: userData,
 				}}
 				options={{
 					header: ({ navigation, scene }) => (
@@ -87,7 +87,7 @@ function SavedStack({ route }) {
 }
 
 function ChatStack({ route }) {
-	const { allItems, conversations, userId } = route.params;
+	const { allItems, conversations, users, userId } = route.params;
 
 	return (
 		<Stack.Navigator
@@ -102,6 +102,7 @@ function ChatStack({ route }) {
 				initialParams={{
 					allItems: allItems,
 					conversations: conversations,
+					users: users,
 					userId: userId,
 				}}
 				options={{
@@ -119,8 +120,8 @@ function ChatStack({ route }) {
 	);
 }
 
-function ProfileStack({route, navigation}) {
-	const {allItems, userId} = route.params;
+function ProfileStack({ route, navigation }) {
+	const { allItems, userId } = route.params;
 
 	return (
 		<Stack.Navigator
@@ -133,7 +134,7 @@ function ProfileStack({route, navigation}) {
 			<Stack.Screen
 				name="Profile"
 				component={Profile}
-				initialParams={{allItems: allItems, userId: userId}}
+				initialParams={{ allItems: allItems, userId: userId }}
 				options={{
 					header: ({ navigation, scene }) => (
 						<Header
@@ -164,7 +165,7 @@ function PostStack({ route, navigation }) {
 			<Stack.Screen
 				name="Post"
 				component={Post}
-				initialParams={{userId: userId}}
+				initialParams={{ userId: userId }}
 				options={{
 					header: ({ navigation, scene }) => (
 						<Header
@@ -202,8 +203,6 @@ function HomeStack({ route }) {
 	const [selectedCategory, setSelectedCategory] = useState("All");
 
 	const { allItems, conversations, users, userId } = route.params;
-
-
 
 	let filteredItems;
 	if (allItems) {
@@ -323,7 +322,7 @@ function LandingStack(props) {
 		const usersOffFunction = onValue(usersRef, (snapshot) => {
 			const newUsers = snapshot.val();
 			setUsers(newUsers);
-		})
+		});
 
 		function cleanUp() {
 			allItemsOffFunction();
@@ -367,8 +366,8 @@ function LandingStack(props) {
 				component={Chat}
 				initialParams={{
 					allItems: allItems,
-					userId: userId,
-					conversations: conversations,
+					
+					conversations: conversations, users: users, userId: userId,
 				}}
 				options={{
 					header: ({ navigation, scene }) => (
@@ -401,7 +400,7 @@ function LandingStack(props) {
 							userData={users[userId]}
 						/>
 					),
-					headerShown: true
+					headerShown: true,
 				}}
 			/>
 		</Stack.Navigator>
@@ -510,8 +509,9 @@ function AppTabs({ route }) {
 				component={ChatStack}
 				initialParams={{
 					allItems: allItems,
-					userId: userId,
 					conversations: conversations,
+					users: users,
+					userId: userId,
 				}}
 				options={{
 					tabBarIcon: ({ focused }) => {
@@ -543,7 +543,7 @@ function AppTabs({ route }) {
 			<Tab.Screen
 				name="ProfileTab"
 				component={ProfileStack}
-				initialParams={{allItems: allItems, userId: userId}}
+				initialParams={{ allItems: allItems, userId: userId }}
 				options={{
 					tabBarIcon: ({ focused }) => {
 						if (focused) {

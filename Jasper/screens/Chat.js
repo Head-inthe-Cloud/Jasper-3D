@@ -17,10 +17,10 @@ import {
 } from "firebase/database";
 
 import { Button, Input } from "../components";
-import { users, conversations } from "../constants/mockData";
 import { Theme, Images } from "../constants";
 import Loading from "./Loading";
 import StarRating from "react-native-star-rating";
+import * as ImagePicker from "expo-image-picker";
 
 const { width } = Dimensions.get("screen");
 
@@ -30,7 +30,7 @@ const Chat = ({ route, navigation }) => {
 	const [paymentToggled, setPaymentToggled] = useState(false);
 	const [textInput, setTextInput] = useState("");
 
-	const { allItems, conversationId, userId, subjectId } = route.params;
+	const { allItems, conversationId, users, userId, subjectId } = route.params;
 
 	const [conversations, setConversations] = useState();
 	useEffect(() => {
@@ -57,33 +57,98 @@ const Chat = ({ route, navigation }) => {
 		const userData = users[userId];
 		const subjectData = users[subjectId];
 		const itemId = conversation.itemId;
+		const db = getDatabase();
 		let itemData = allItems[itemId];
 
 		const handleDeleteItem = (itemId) => {
-			const db = getDatabase();
 			const itemRef = dbRef(db, "allItems/" + itemId);
 			firebaseSet(itemRef, null);
 			itemData = null;
 			console.warn("Item Deleted");
 		};
 
+		const togglePaymentOptions = () => {
+			const expandHeight = 280;
+			if (inputBoxHeight === 90) {
+				setInputBoxHeight(expandHeight);
+			} else {
+				setInputBoxHeight(90);
+			}
+		};
+
+		const toggleTextInput = (action) => {
+			const expandHeight = 400;
+			if (action === "up") {
+				setInputBoxHeight(expandHeight);
+			} else if (action === "down") {
+				setInputBoxHeight(90);
+			}
+		};
+
+		const handleSentMessage = (type, content) => {
+			if (!content) {
+				return;
+			}
+			const conversationRef = dbRef(
+				db,
+				"conversations/" + conversationId
+			);
+			const newConversation = conversation;
+			let newMessages = newConversation.messages;
+			let today = new Date(Date.now());
+			let newMessage = {
+				time: today.toISOString(),
+				contentType: null,
+				content: null,
+				userId: userId,
+			};
+
+			switch (type) {
+				case "text":
+					newMessage.content = content;
+					newMessage.contentType = "text";
+					break;
+				case "image":
+					newMessage.content = content;
+					newMessage.contentType = "image";
+					break;
+				case "paymentInfo":
+					newMessage.content = content;
+					if (content.includes("data:image/jpeg;base64")) {
+						newMessage.contentType = "image";
+					} else {
+						newMessage.contentType = "text";
+					}
+					break;
+				default:
+					break;
+			}
+
+			newMessages.push(newMessage);
+			firebaseSet(conversationRef, newConversation);
+			setTextInput("");
+		};
+
+		const handleChooseImage = async () => {
+			const options = {
+				maxWidth: 300,
+				maxHeight: 300,
+				mediaType: "photo",
+				mediaTypes: ImagePicker.MediaTypeOptions.Images,
+				allowsEditing: true,
+				aspect: [4, 3],
+				quality: 1,
+				base64: true,
+			};
+			const result = await ImagePicker.launchImageLibraryAsync(options);
+			if(!result.base64){
+				return;
+			}
+			handleSentMessage('image', "data:image/jpeg;base64," + result.base64);
+		};
+
 		const renderMessages = () => {
 			const messages = conversation.messages;
-
-			// const date = new Date(conversation.updatedAt);
-			// const displayedDate = () => {
-			// 	if (Date.now() - date.getMilliseconds() >= 86400000) {
-			// 		return (
-			// 			date.getFullYear() +
-			// 			"-" +
-			// 			date.getMonth() +
-			// 			"-" +
-			// 			date.getDate()
-			// 		);
-			// 	} else {
-			// 		return date.getHours() + ":" + date.getMinutes();
-			// 	}
-			// };
 
 			return messages.map((message, idx) => {
 				const avatarUri = users[message.userId].avatar;
@@ -124,13 +189,10 @@ const Chat = ({ route, navigation }) => {
 					const messageContent = () => {
 						if (message.contentType === "text") {
 							return <Text>{message.content}</Text>;
-						} else if (
-							message.contentType === "paymentInfo" ||
-							message.contentType === "image"
-						) {
+						} else if (message.contentType === "image") {
 							return (
 								<Image
-									source={require("../assets/imgs/venmo-QR.png")}
+									source={{ uri: message.content }}
 									style={{ height: 200, width: 200 }}
 								/>
 							);
@@ -202,44 +264,6 @@ const Chat = ({ route, navigation }) => {
 					);
 				}
 			});
-		};
-
-		const togglePaymentOptions = () => {
-			const expandHeight = 280;
-			if (inputBoxHeight === 90) {
-				setInputBoxHeight(expandHeight);
-			} else {
-				setInputBoxHeight(90);
-			}
-		};
-
-		const toggleTextInput = (action) => {
-			const expandHeight = 400;
-			if (action === "up") {
-				setInputBoxHeight(expandHeight);
-			} else if (action === "down") {
-				setInputBoxHeight(90);
-			}
-		};
-
-		const handleSentMessage = () => {
-			const db = getDatabase();
-			const conversationRef = dbRef(
-				db,
-				"conversations/" + conversationId
-			);
-			const newConversation = conversation;
-			let newMessages = newConversation.messages;
-			let today = new Date(Date.now());
-			const newMessage = {
-				time: today.toISOString(),
-				contentType: "text",
-				content: textInput,
-				userId: userId,
-			};
-			newMessages.push(newMessage);
-			firebaseSet(conversationRef, newConversation);
-			setTextInput("");
 		};
 
 		const userInputBar = () => {
@@ -327,6 +351,7 @@ const Chat = ({ route, navigation }) => {
 								iconColor={theme.COLORS.BLACK}
 								color={"transparent"}
 								style={{ width: 30, height: 30, bottom: 5 }}
+								onPress={() => handleChooseImage()}
 							/>
 						</Block>
 						<Block style={{ marginVertical: 10 }}>
@@ -344,7 +369,9 @@ const Chat = ({ route, navigation }) => {
 									right: 2,
 									bottom: 3,
 								}}
-								onPress={() => handleSentMessage()}
+								onPress={() =>
+									handleSentMessage("text", textInput)
+								}
 							/>
 						</Block>
 					</Block>
@@ -370,29 +397,7 @@ const Chat = ({ route, navigation }) => {
 									marginBottom: theme.SIZES.BASE * 2,
 								}}
 							>
-								{userData.paymentOptions.map(
-									(paymentOption) => (
-										<TouchableOpacity
-											style={{}}
-											key={paymentOption}
-										>
-											<Image
-												source={
-													Images.PaymentOptionLogos[
-														paymentOption
-													]
-												}
-												style={{
-													width: 130,
-													height: 130,
-													marginHorizontal:
-														theme.SIZES.BASE,
-													borderRadius: 15,
-												}}
-											/>
-										</TouchableOpacity>
-									)
-								)}
+								{renderPaymentOptions()}
 							</ScrollView>
 						</Block>
 					)}
@@ -478,6 +483,33 @@ const Chat = ({ route, navigation }) => {
 			}
 		};
 
+		const renderPaymentOptions = () => {
+			if (!userData.paymentOptions) {
+				return;
+			}
+			return Object.keys(userData.paymentOptions).map((paymentOption) => (
+				<TouchableOpacity
+					style={{}}
+					key={"chat-" + paymentOption}
+					onPress={() =>
+						handleSentMessage(
+							"paymentInfo",
+							userData.paymentOptions[paymentOption]
+						)
+					}
+				>
+					<Image
+						source={Images.PaymentOptionLogos[paymentOption]}
+						style={{
+							width: 130,
+							height: 130,
+							marginHorizontal: theme.SIZES.BASE,
+							borderRadius: 15,
+						}}
+					/>
+				</TouchableOpacity>
+			));
+		};
 		return (
 			<Block flex center style={styles.home}>
 				<ScrollView

@@ -74,7 +74,7 @@ function Post({ route, navigation }) {
 		}
 	};
 
-	const handleChoosePhoto = async () => {
+	const handleChooseImage = async () => {
 		// console.warn("Choosing Photo");
 		const options = {
 			maxWidth: 300,
@@ -241,7 +241,7 @@ function Post({ route, navigation }) {
 						</Block>
 						<Block style={styles.photoButton}>
 							<Text style={styles.title}>Photos</Text>
-							<Button onPress={() => handleChoosePhoto()}>
+							<Button onPress={() => handleChooseImage()}>
 								Choose Photo
 							</Button>
 							<ScrollView

@@ -35,6 +35,8 @@ function Profile({ route, navigation }) {
 	const [userData, setUserData] = useState();
 	const [editInfoField, setEditInfoField] = useState(false);
 
+	const [displayedPaymentOption, setDisplayedPaymentOption] = useState([]);
+
 	const inputBoxRef = useRef(null);
 
 	useEffect(() => {
@@ -80,12 +82,28 @@ function Profile({ route, navigation }) {
 
 	const setInfo = (text) => {
 		let newUserData = { ...userData };
-		newUserData[editInfoField] = text;
+		if (editInfoField.includes("/")) {
+			const fields = editInfoField.split("/");
+			if(newUserData[fields[0]]){
+				newUserData[fields[0]][fields[1]] = text;
+			} else {
+				newUserData[fields[0]] = {};
+				newUserData[fields[0]][fields[1]] = text;
+			}
+			
+		} else {
+			newUserData[editInfoField] = text;
+		}
 		firebaseSet(userDataRef, newUserData);
 	};
 
-	const handleChoosePhoto = async () => {
-		// console.warn("Choosing Photo");
+	const handleDeletePaymentInfo = (paymentOption) => {
+		const newUserData = { ...userData };
+		newUserData.paymentOptions[paymentOption] = null;
+		firebaseSet(userDataRef, newUserData);
+	};
+
+	const handleChoosePhoto = async (imageField) => {
 		const options = {
 			mediaTypes: ImagePicker.MediaTypeOptions.Images,
 			allowsEditing: true,
@@ -95,8 +113,22 @@ function Profile({ route, navigation }) {
 		};
 		const result = await ImagePicker.launchImageLibraryAsync(options);
 		let newUserData = { ...userData };
-		newUserData.avatar = "data:image/jpeg;base64," + result.base64;
-		firebaseSet(userDataRef, newUserData);
+
+		if(result.base64){
+			if (imageField.includes("/")) {
+				const fields = imageField.split("/");
+				if(newUserData[fields[0]]){
+					newUserData[fields[0]][fields[1]] = "data:image/jpeg;base64," + result.base64;
+				} else {
+					newUserData[fields[0]] = {};
+					newUserData[fields[0]][fields[1]] = "data:image/jpeg;base64," + result.base64;
+				}
+				
+			} else {
+				newUserData[field] = "data:image/jpeg;base64," + result.base64;
+			}
+			firebaseSet(userDataRef, newUserData);
+		}
 	};
 
 	const renderLocation = () => {
@@ -123,6 +155,267 @@ function Profile({ route, navigation }) {
 		}
 	};
 
+	const textInputBox = () => {
+		let displayedTextValue;
+		if (editInfoField.includes("/")) {
+			const fields = editInfoField.split("/");
+			if(userData[fields[0]]){
+				displayedTextValue = userData[fields[0]][fields[1]];
+			} else {
+				displayedTextValue = "";
+			}
+			
+		} else {
+			displayedTextValue = userData[editInfoField];
+		}
+
+		return (
+			<Block style={[styles.textInput, styles.shadow]}>
+				<Block
+					style={{
+						borderWidth: 2,
+						borderRadius: 15,
+						padding: 10,
+						borderColor: Theme.COLORS.BLOCK,
+					}}
+				>
+					<TextInput
+						style={{
+							color: Theme.COLORS.HEADER,
+							height: 110,
+						}}
+						placeholder="Describe your item "
+						multiline={true}
+						numberOfLines={6}
+						maxLength={500}
+						onChangeText={(text) => setInfo(text)}
+						onBlur={() => setEditInfoField(false)}
+						value={displayedTextValue}
+						ref={inputBoxRef}
+					></TextInput>
+				</Block>
+			</Block>
+		);
+	};
+
+	const renderPaymentInformation = () => {
+		let paymentOptions = ["PayPal", "Venmo", "WeChat", "Zelle"];
+		let existingPaymentOptions = [];
+		if (userData.paymentOptions) {
+			existingPaymentOptions = Object.keys(userData.paymentOptions);
+			paymentOptions = existingPaymentOptions.concat(
+				paymentOptions.filter(
+					(option) => !existingPaymentOptions.includes(option)
+				)
+			);
+		}
+
+		const toggleDisplayPaymentOption = (paymentOption) => {
+			if (displayedPaymentOption.includes(paymentOption)) {
+				const newDisplayedPaymentOption = displayedPaymentOption.filter(
+					(option) => option != paymentOption
+				);
+				setDisplayedPaymentOption(newDisplayedPaymentOption);
+			} else {
+				const newDisplayedPaymentOption = displayedPaymentOption.concat(
+					[paymentOption]
+				);
+				setDisplayedPaymentOption(newDisplayedPaymentOption);
+			}
+		};
+
+		const renderPaymentOption = (paymentOption) => {
+			if (userData.paymentOptions && Object.keys(userData.paymentOptions).includes(paymentOption)) {
+				const paymentData = userData.paymentOptions[paymentOption];
+				let dataType;
+				if (paymentData.includes("data:image/jpeg;base64")) {
+					dataType = "image";
+				} else {
+					dataType = "text";
+				}
+
+				return (
+					<Block flex key={"Payment-" + paymentOption}>
+						<TouchableOpacity
+							onPress={() =>
+								toggleDisplayPaymentOption(paymentOption)
+							}
+						>
+							<Image
+								source={
+									Images.PaymentOptionLogos[paymentOption]
+								}
+								style={{
+									width: 130,
+									height: 130,
+									marginHorizontal: theme.SIZES.BASE,
+									borderRadius: 15,
+								}}
+							/>
+						</TouchableOpacity>
+						{displayedPaymentOption.includes(paymentOption) &&
+							dataType === "image" && (
+								<Block>
+									<Image
+										source={{ uri: paymentData }}
+										style={{
+											width: 130,
+											height: 130,
+											marginHorizontal: theme.SIZES.BASE,
+											borderRadius: 15,
+										}}
+									/>
+									<Button
+										onlyIcon
+										icon="closecircleo"
+										iconFamily="AntDesign"
+										iconSize={30}
+										iconColor={Theme.COLORS.ERROR}
+										color={Theme.COLORS.WHITE}
+										style={{
+											position: "absolute",
+											right: 110,
+											bottom: 95,
+											width: 40,
+											height: 40,
+										}}
+										onPress={() => {
+											handleDeletePaymentInfo(
+												paymentOption
+											);
+										}}
+									/>
+								</Block>
+							)}
+						{displayedPaymentOption.includes(paymentOption) &&
+							dataType === "text" && (
+								<Block>
+									<TouchableOpacity
+										onPress={() =>
+											handleEditInfo(
+												"paymentOptions/" +
+													paymentOption
+											)
+										}
+									>
+										<Block
+											flex
+											middle
+											style={{
+												backgroundColor:
+													Theme.COLORS.BLOCK,
+												width: 130,
+												height: 130,
+												marginHorizontal:
+													theme.SIZES.BASE,
+												borderRadius: 25,
+											}}
+										>
+											<Text>{paymentData}</Text>
+										</Block>
+									</TouchableOpacity>
+									<Button
+										onlyIcon
+										icon="closecircleo"
+										iconFamily="AntDesign"
+										iconSize={30}
+										iconColor={Theme.COLORS.ERROR}
+										color={Theme.COLORS.WHITE}
+										style={{
+											position: "absolute",
+											right: 110,
+											bottom: 95,
+											width: 40,
+											height: 40,
+										}}
+										onPress={() => {
+											handleDeletePaymentInfo(
+												paymentOption
+											);
+										}}
+									/>
+								</Block>
+							)}
+					</Block>
+				);
+			} else {
+				return (
+					<Block flex key={"Payment-" + paymentOption}>
+						<TouchableOpacity
+							onPress={() =>
+								toggleDisplayPaymentOption(paymentOption)
+							}
+						>
+							<Image
+								source={
+									Images.PaymentOptionLogos[paymentOption]
+								}
+								style={{
+									width: 130,
+									height: 130,
+									marginHorizontal: theme.SIZES.BASE,
+									borderRadius: 15,
+									opacity: 0.5,
+								}}
+							/>
+						</TouchableOpacity>
+						{displayedPaymentOption.includes(paymentOption) && (
+							<Block>
+								<Button
+									color={Theme.COLORS.SECONDARY}
+									style={{
+										width: 130,
+										marginHorizontal: theme.SIZES.BASE,
+									}}
+									onPress={() =>
+										handleEditInfo("paymentOptions/" + paymentOption)
+									}
+								>
+									Upload Text
+								</Button>
+								<Button
+									color={Theme.COLORS.SECONDARY}
+									style={{
+										width: 130,
+										marginHorizontal: theme.SIZES.BASE,
+									}}
+									onPress={() => handleChoosePhoto("paymentOptions/" + paymentOption)}
+								>
+									Upload Image
+								</Button>
+							</Block>
+						)}
+					</Block>
+				);
+			}
+		};
+
+		return (
+			<Block
+				style={{
+					paddingBottom: HeaderHeight * 2,
+				}}
+			>
+				<ScrollView
+					horizontal={true}
+					pagingEnabled={true}
+					decelerationRate={0}
+					scrollEventThrottle={16}
+					snapToAlignment="center"
+					showsHorizontalScrollIndicator={false}
+					snapToInterval={130 + theme.SIZES.BASE * 0.375}
+					contentContainerStyle={{
+						paddingHorizontal: theme.SIZES.BASE / 2,
+					}}
+				>
+					{paymentOptions.map((paymentOption) =>
+						renderPaymentOption(paymentOption)
+					)}
+				</ScrollView>
+			</Block>
+		);
+	};
+
 	return (
 		<Block flex style={styles.profile}>
 			<Block flex>
@@ -138,7 +431,7 @@ function Profile({ route, navigation }) {
 						<Block flex style={styles.profileCard}>
 							<Block middle style={styles.avatarContainer}>
 								<TouchableOpacity
-									onPress={() => handleChoosePhoto()}
+									onPress={() => handleChoosePhoto("avatar")}
 								>
 									<Image
 										source={{ uri: userData.avatar }}
@@ -226,7 +519,6 @@ function Profile({ route, navigation }) {
 												color: "#32325D",
 												fontWeight: "bold",
 												fontSize: 28,
-												flexWrap: "warp",
 											}}
 											style={{
 												marginBottom: 0,
@@ -373,9 +665,6 @@ function Profile({ route, navigation }) {
 									</Text>
 								</Block>
 								<Block
-									style={{
-										paddingBottom: HeaderHeight * 2,
-									}}
 								>
 									<ScrollView
 										horizontal={true}
@@ -399,21 +688,6 @@ function Profile({ route, navigation }) {
 													row
 													key={"posted-" + idx}
 												>
-													{/* <Image
-														source={{
-															uri: allItems[
-																itemId
-															].images[0],
-														}}
-														style={{
-															width: 130,
-															height: 130,
-															marginHorizontal:
-																theme.SIZES
-																	.BASE,
-															borderRadius: 15,
-														}}
-													/> */}
 													<Card
 														item={allItems[itemId]}
 														style={{
@@ -428,36 +702,21 @@ function Profile({ route, navigation }) {
 										)}
 									</ScrollView>
 								</Block>
+								<Block space="between">
+									<Text
+										bold
+										size={16}
+										color="#525F7F"
+										style={{ marginTop: 12 }}
+									>
+										Payment Information
+									</Text>
+								</Block>
+								{renderPaymentInformation()}
 							</Block>
 						</Block>
 					</ScrollView>
-					{editInfoField && (
-						<Block style={[styles.textInput, styles.shadow]}>
-							<Block
-								style={{
-									borderWidth: 2,
-									borderRadius: 15,
-									padding: 10,
-									borderColor: Theme.COLORS.BLOCK,
-								}}
-							>
-								<TextInput
-									style={{
-										color: Theme.COLORS.HEADER,
-										height: 110,
-									}}
-									placeholder="Describe your item "
-									multiline={true}
-									numberOfLines={6}
-									maxLength={500}
-									onChangeText={(text) => setInfo(text)}
-									onBlur={() => setEditInfoField(false)}
-									value={userData[editInfoField]}
-									ref={inputBoxRef}
-								></TextInput>
-							</Block>
-						</Block>
-					)}
+					{editInfoField && textInputBox()}
 				</ImageBackground>
 			</Block>
 		</Block>
