@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { withNavigation } from "@react-navigation/compat";
 import {
 	TouchableOpacity,
@@ -7,6 +7,11 @@ import {
 	Dimensions,
 } from "react-native";
 import { Button, Block, NavBar, Text, theme } from "galio-framework";
+import {
+	getDatabase,
+	ref as dbRef,
+	set as firebaseSet,
+} from "firebase/database";
 
 import Icon from "./Icon";
 import Input from "./Input";
@@ -18,56 +23,75 @@ const iPhoneX = () =>
 	Platform.OS === "ios" &&
 	(height === 812 || width === 812 || height === 896 || width === 896);
 
-const ChatButton = ({ isWhite, style, navigation }) => (
-	<TouchableOpacity
-		style={[styles.button, style]}
-		onPress={() => navigation.navigate("Pro")}
-	>
-		<Icon
-			family="MaterialIcons"
-			size={16}
-			name="chat-bubble"
-			color={Theme.COLORS[isWhite ? "WHITE" : "ICON"]}
-		/>
-		<Block middle style={styles.notify} />
-	</TouchableOpacity>
-);
+function Header(props) {
 
-const HeartButton = ({ isWhite, style, navigation }) => (
-	<TouchableOpacity
-		style={[styles.button, style]}
-		onPress={() => navigation.navigate("Pro")}
-	>
-		<Icon
-			family="AntDesign"
-			size={18}
-			name="heart"
-			color={Theme.COLORS[isWhite ? "WHITE" : "ICON"]}
-		/>
-	</TouchableOpacity>
-);
+	let initSaved = false;
+	if (props.title == "Detail") {
+		const { route, userData } = props;
+		const itemId = route.params.itemId;
+		initSaved = userData.savedItems.includes(itemId);
+	}
 
-const SearchButton = ({ isWhite, style, navigation }) => (
-	<TouchableOpacity
-		style={[styles.button, style]}
-		onPress={() => navigation.navigate("Pro")}
-	>
-		<Icon
-			size={16}
-			family="Galio"
-			name="search-zoom-in"
-			color={theme.COLORS[isWhite ? "WHITE" : "ICON"]}
-		/>
-	</TouchableOpacity>
-);
+	const [saved, setSaved] = useState(initSaved);
 
-class Header extends React.Component {
-	handleLeftPress = () => {
-		const { back, navigation } = this.props;
+	const ChatButton = ({ isWhite, style, navigation }) => (
+		<TouchableOpacity
+			style={[styles.button, style]}
+			onPress={() => navigation.navigate("Pro")}
+		>
+			<Icon
+				family="MaterialIcons"
+				size={16}
+				name="chat-bubble"
+				color={Theme.COLORS[isWhite ? "WHITE" : "ICON"]}
+			/>
+			<Block middle style={styles.notify} />
+		</TouchableOpacity>
+	);
+
+	const HeartButton = ({ isWhite, style, navigation, saved }) => (
+		<TouchableOpacity
+			style={[styles.button, style]}
+			onPress={() => toggleSaveButton()}
+		>
+			<Icon
+				family="AntDesign"
+				size={18}
+				name="heart"
+				color={
+					Theme.COLORS[saved ? "ERROR" : isWhite ? "WHITE" : "ICON"]
+				}
+			/>
+		</TouchableOpacity>
+	);
+	const handleLeftPress = () => {
+		const { back, navigation } = props;
 		return back ? navigation.goBack() : null;
 	};
-	renderRight = () => {
-		const { white, title, navigation } = this.props;
+
+	const toggleSaveButton = () => {
+		const { route, userData } = props;
+		const itemId = route.params.itemId;
+		const userId = route.params.userId;
+
+		const db = getDatabase();
+		const userRef = dbRef(db, "users/" + userId);
+
+		let newUserData = userData;
+		if (saved) {
+			newUserData.savedItems = newUserData.savedItems.filter(
+				(savedItemId) => savedItemId != itemId
+			);
+			setSaved(false);
+		} else {
+			newUserData.savedItems.push(itemId);
+			setSaved(true);
+		}
+		firebaseSet(userRef, newUserData);
+	};
+
+	const renderRight = () => {
+		const { white, title, navigation } = props;
 
 		if (title === "Title") {
 			return [
@@ -85,114 +109,21 @@ class Header extends React.Component {
 		}
 
 		switch (title) {
-			case "Home":
-				// return ([
-				//   <ChatButton key='chat-home' navigation={navigation} isWhite={white} />,
-				//   <HeartButton key='basket-home' navigation={navigation} isWhite={white} />
-				// ]);
-				return;
 			case "Detail":
 				return [
-					<ChatButton
-						key="chat-categories"
-						navigation={navigation}
-					/>,
 					<HeartButton
 						key="basket-categories"
 						navigation={navigation}
+						saved={saved}
 					/>,
 				];
-
-			case "Saved":
-				return;
-
-			case "Categories":
-				return [
-					<ChatButton
-						key="chat-categories"
-						navigation={navigation}
-						isWhite={white}
-					/>,
-					<HeartButton
-						key="basket-categories"
-						navigation={navigation}
-						isWhite={white}
-					/>,
-				];
-			case "Category":
-				return [
-					<ChatButton
-						key="chat-deals"
-						navigation={navigation}
-						isWhite={white}
-					/>,
-					<HeartButton
-						key="basket-deals"
-						navigation={navigation}
-						isWhite={white}
-					/>,
-				];
-			case "Profile":
-				return [
-					<ChatButton
-						key="chat-profile"
-						navigation={navigation}
-						isWhite={white}
-					/>,
-					<HeartButton
-						key="basket-deals"
-						navigation={navigation}
-						isWhite={white}
-					/>,
-				];
-			case "Product":
-				return [
-					<SearchButton
-						key="search-product"
-						navigation={navigation}
-						isWhite={white}
-					/>,
-					<HeartButton
-						key="basket-product"
-						navigation={navigation}
-						isWhite={white}
-					/>,
-				];
-			case "Search":
-				return [
-					<ChatButton
-						key="chat-search"
-						navigation={navigation}
-						isWhite={white}
-					/>,
-					<HeartButton
-						key="basket-search"
-						navigation={navigation}
-						isWhite={white}
-					/>,
-				];
-			case "Settings":
-				return [
-					<ChatButton
-						key="chat-search"
-						navigation={navigation}
-						isWhite={white}
-					/>,
-					<HeartButton
-						key="basket-search"
-						navigation={navigation}
-						isWhite={white}
-					/>,
-				];
-			case "None":
-				return;
 			default:
 				break;
 		}
 	};
 
-	renderSearch = () => {
-		const { title } = this.props;
+	const renderSearch = () => {
+		const { title } = props;
 		const searchPlaceHolder = () => {
 			if (title == "Message Center") {
 				return "Search for chat history";
@@ -200,7 +131,8 @@ class Header extends React.Component {
 				return "What are you looking for?";
 			}
 		};
-		const { navigation } = this.props;
+		const { navigation } = props;
+		const { handleSearch } = props;
 		return (
 			<Input
 				right
@@ -208,7 +140,6 @@ class Header extends React.Component {
 				style={styles.search}
 				placeholder={searchPlaceHolder()}
 				placeholderTextColor={"#8898AA"}
-				onFocus={() => navigation.navigate("Pro")}
 				iconContent={
 					<Icon
 						size={16}
@@ -217,11 +148,12 @@ class Header extends React.Component {
 						family="ArgonExtra"
 					/>
 				}
+				onChangeText={(newText) => handleSearch(newText)}
 			/>
 		);
 	};
-	renderOptions = () => {
-		const { navigation, optionLeft, optionRight } = this.props;
+	const renderOptions = () => {
+		const { navigation, optionLeft, optionRight } = props;
 
 		return (
 			<Block row style={styles.options}>
@@ -263,8 +195,8 @@ class Header extends React.Component {
 			</Block>
 		);
 	};
-	renderTabs = () => {
-		const { tabs, tabIndex, navigation } = this.props;
+	const renderTabs = () => {
+		const { tabs, tabIndex, navigation } = props;
 		const defaultTab = tabs && tabs[0] && tabs[0].id;
 
 		if (!tabs) return null;
@@ -277,99 +209,93 @@ class Header extends React.Component {
 			/>
 		);
 	};
-	renderHeader = () => {
-		const { search, options, tabs } = this.props;
+	const renderHeader = () => {
+		const { search, options, tabs } = props;
 		if (search || tabs || options) {
 			return (
 				<Block center>
-					{search ? this.renderSearch() : null}
-					{options ? this.renderOptions() : null}
-					{tabs ? this.renderTabs() : null}
+					{search ? renderSearch() : null}
+					{options ? renderOptions() : null}
+					{tabs ? renderTabs() : null}
 				</Block>
 			);
 		}
 	};
-	render() {
-		const {
-			back,
-			title,
-			white,
-			transparent,
-			bgColor,
-			iconColor,
-			titleColor,
-			navigation,
-			...props
-		} = this.props;
+	const {
+		back,
+		title,
+		white,
+		transparent,
+		bgColor,
+		iconColor,
+		titleColor,
+		navigation,
+		...extraProps
+	} = props;
 
-		const noShadow = [
-			"Search",
-			"Categories",
-			"Deals",
-			"Pro",
-			"Profile",
-		].includes(title);
-		const headerStyles = [
-			!noShadow ? styles.shadow : null,
-			transparent ? { backgroundColor: "rgba(0,0,0,0)" } : null,
-		];
+	const noShadow = [
+		"Search",
+		"Categories",
+		"Deals",
+		"Pro",
+		"Profile",
+	].includes(title);
+	const headerStyles = [
+		!noShadow ? styles.shadow : null,
+		transparent ? { backgroundColor: "rgba(0,0,0,0)" } : null,
+	];
 
-		const navbarStyles = [
-			styles.navbar,
-			bgColor && { backgroundColor: bgColor },
-		];
+	const navbarStyles = [
+		styles.navbar,
+		bgColor && { backgroundColor: bgColor },
+	];
 
-		const navbar = () => {
-			if (title == "Home") {
-				return (
-					<Block
-						style={{ paddingVertical: theme.SIZES.BASE * 1.5 }}
-					/>
-				);
-			} else {
-				return (
-					<NavBar
-						back={false}
-						title={title}
-						style={navbarStyles}
-						transparent={transparent}
-						right={this.renderRight()}
-						rightStyle={{ alignItems: "center" }}
-						left={
-							<Icon
-								name={back ? "chevron-left" : null}
-								family="entypo"
-								size={20}
-								onPress={this.handleLeftPress}
-								color={
-									iconColor ||
-									(white
-										? Theme.COLORS.WHITE
-										: Theme.COLORS.ICON)
-								}
-								style={{ marginTop: 2 }}
-							/>
-						}
-						leftStyle={{ paddingVertical: 12, flex: 0.2 }}
-						titleStyle={[
-							styles.title,
-							{
-								color: Theme.COLORS[white ? "WHITE" : "HEADER"],
-							},
-							titleColor && { color: titleColor },
-						]}
-						{...props}
-					/>
-				);
-			}
-		};
-		return (
-			<Block style={headerStyles}>
-				{navbar()}
-				{this.renderHeader()}
-			</Block>
-		);
-	}
+	const navbar = () => {
+		if (title == "Home") {
+			return (
+				<Block style={{ paddingVertical: theme.SIZES.BASE * 1.5 }} />
+			);
+		} else {
+			return (
+				<NavBar
+					back={false}
+					title={title}
+					style={navbarStyles}
+					transparent={transparent}
+					right={renderRight()}
+					rightStyle={{ alignItems: "center" }}
+					left={
+						<Icon
+							name={back ? "chevron-left" : null}
+							family="entypo"
+							size={20}
+							onPress={handleLeftPress}
+							color={
+								iconColor ||
+								(white ? Theme.COLORS.WHITE : Theme.COLORS.ICON)
+							}
+							style={{ marginTop: 2 }}
+						/>
+					}
+					leftStyle={{ paddingVertical: 12, flex: 0.2 }}
+					titleStyle={[
+						styles.title,
+						{
+							color: Theme.COLORS[white ? "WHITE" : "HEADER"],
+						},
+						titleColor && { color: titleColor },
+					]}
+					{...extraProps}
+				/>
+			);
+		}
+	};
+	return (
+		<Block style={headerStyles}>
+			{navbar()}
+			{renderHeader()}
+		</Block>
+	);
 }
 
 const styles = StyleSheet.create({

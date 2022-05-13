@@ -9,7 +9,9 @@ export const users = {
 		paymentOptions:["PayPal", "Venmo", "WeChat", "Zelle"],
 		interests: ["Furniture", "Electronics"],
 		savedItems: ["i00005", "i00010"],
-		postedItems: ["i00001", "i00002", "i00003", "i00004"]
+		postedItems: ["i00001", "i00002", "i00003", "i00004"],
+		intro: "I am a third year undergraduate at UW, I study Math and Philosophy. I have a bunny called Bailey and I love painting!",
+		location: "U-district"
 	},
 	u00002: {
 		userId: "u00002",
@@ -29,11 +31,23 @@ export const users = {
 		userName: "Josh",
 		avatar: "https://i.ibb.co/JKPPkcv/avatar3.png",
 		uw: false,
-		rating: 4.5730,
+		rating: 4.5,
 		paymentOptions:["PayPal", "Venmo"],
 		interests: ["Fashion", "Sports"],
 		savedItems: ["i00003", "i00005"],
-		postedItems: ["i00008", "i00009", "i00010"]
+		postedItems: ["i00008", "i00009", ]
+	},
+	u00004: {
+		userId: "u00004",
+		email: "newDawg@uw.edu",
+		userName: "Billy",
+		avatar: "https://i.ibb.co/QbMKBGC/Avatars-Default-with-Backdrop.png",
+		uw: false,
+		rating: 5.0,
+		paymentOptions:["PayPal", "Venmo"],
+		interests: ["Fashion", "Sports"],
+		savedItems: ["i00003", "i00005"],
+		postedItems: ["i00010"]
 	},
 };
 
@@ -143,6 +157,7 @@ export const items = {
 		pickUpLocation: "Red Square",
 		dropOff: "False",
 		UWvisibility: "True",
+		negotiable: "True"
 	},
 	i00002: {
 		itemId: "i00002",
@@ -159,6 +174,7 @@ export const items = {
 		pickUpLocation: "Red Square",
 		dropOff: "False",
 		UWvisibility: "True",
+		negotiable: "True"
 	},
 	i00003: {
 		itemId: "i00003",
@@ -175,6 +191,7 @@ export const items = {
 		pickUpLocation: "Red Square",
 		dropOff: "False",
 		UWvisibility: "True",
+		negotiable: "True"
 	},
 	i00004: {
 		itemId: "i00004",
@@ -190,6 +207,7 @@ export const items = {
 		pickUpLocation: "Red Square",
 		dropOff: "False",
 		UWvisibility: "True",
+		negotiable: "True"
 	},
 	i00005: {
 		itemId: "i00005",
@@ -205,6 +223,7 @@ export const items = {
 		pickUpLocation: "Red Square",
 		dropOff: "False",
 		UWvisibility: "True",
+		negotiable: "True"
 	},
 	i00006: {
 		itemId: "i00006",
@@ -220,6 +239,7 @@ export const items = {
 		pickUpLocation: "Red Square",
 		dropOff: "False",
 		UWvisibility: "True",
+		negotiable: "True"
 	},
 	i00007: {
 		itemId: "i00007",
@@ -235,6 +255,7 @@ export const items = {
 		pickUpLocation: "Red Square",
 		dropOff: "False",
 		UWvisibility: "True",
+		negotiable: "True"
 	},
 	i00008: {
 		itemId: "i00008",
@@ -250,6 +271,7 @@ export const items = {
 		pickUpLocation: "Red Square",
 		dropOff: "False",
 		UWvisibility: "True",
+		negotiable: "True"
 	},
 	i00009: {
 		itemId: "i00009",
@@ -265,10 +287,11 @@ export const items = {
 		pickUpLocation: "Red Square",
 		dropOff: "False",
 		UWvisibility: "True",
+		negotiable: "True"
 	},
 	i00010: {
 		itemId: "i00010",
-		sellerId: "u00003",
+		sellerId: "u00004",
 		createDate: "2022-04-16",
 		condition: "Brand New",
 		title: "30 LB Dog Food",
@@ -278,5 +301,6 @@ export const items = {
 		pickUpLocation: "Red Square",
 		dropOff: "False",
 		UWvisibility: "True",
+		negotiable: "True"
 	},
 };

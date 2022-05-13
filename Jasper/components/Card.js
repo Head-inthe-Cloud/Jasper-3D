@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 import { withNavigation } from "@react-navigation/compat";
 import {
 	StyleSheet,
@@ -8,10 +8,14 @@ import {
 } from "react-native";
 import { Block, Text, theme } from "galio-framework";
 
+import { getDatabase, set as firebaseSet, get as firebaseGet, ref as dbRef } from "firebase/database";
+
 import { Theme } from "../constants";
 import { Button } from ".";
 
 function Card(props) {
+	const [saved, setSaved] = useState(true);
+
 	const navigation = props.navigation;
 	const item = props.item;
 	const horizontal = props.horizontal;
@@ -32,18 +36,33 @@ function Card(props) {
 	];
 
 	const handleUnlike = () => {
-		console.warn("Unlike");
+		if(props.userData){
+			const db = getDatabase();
+			const userRef = dbRef(db, "users/" + props.userData.userId);
+
+			let newUserData = props.userData;
+			if (saved) {
+				newUserData.savedItems = newUserData.savedItems.filter(
+					(savedItemId) => savedItemId != item.itemId
+				);
+			} else {
+				newUserData.savedItems.push(item.itemId);
+			}
+			firebaseSet(userRef, newUserData);
+			setSaved(!saved);
+		}
 	};
+
 	const UnlikeButton = () => {
 		return (
 			<Button
 				onPress={() => handleUnlike()}
 				onlyIcon
-				color={theme.COLORS.WHITE}
+				color={"transparent"}
 				icon="heart"
 				iconFamily="AntDesign"
 				iconSize={25}
-				iconColor={Theme.COLORS.ERROR}
+				iconColor={saved ? Theme.COLORS.ERROR : Theme.COLORS.GRAY}
 				radius={100}
 				style={styles.unlikeButton}
 			/>
@@ -52,7 +71,9 @@ function Card(props) {
 	return (
 		<Block row={horizontal} card flex style={cardContainer}>
 			<TouchableWithoutFeedback
-				onPress={() => navigation.navigate("Detail", {itemId: item.itemId})}
+				onPress={() =>
+					navigation.navigate("Detail", { itemId: item.itemId })
+				}
 			>
 				<Block flex style={imgContainer}>
 					<Image
@@ -62,7 +83,9 @@ function Card(props) {
 				</Block>
 			</TouchableWithoutFeedback>
 			<TouchableWithoutFeedback
-				onPress={() => navigation.navigate("Detail",  {itemId: item.itemId})}
+				onPress={() =>
+					navigation.navigate("Detail", { itemId: item.itemId })
+				}
 			>
 				<Block flex style={styles.cardDescription}>
 					<Text size={14} style={styles.cardTitle}>
@@ -74,7 +97,7 @@ function Card(props) {
 						color={priceColor || Theme.COLORS.SECONDARY}
 						bold
 					>
-						{"$" + item.price.toFixed(2)}
+						{"$" + parseFloat(item.price).toFixed(2)}
 					</Text>
 					{horizontal && UnlikeButton()}
 				</Block>

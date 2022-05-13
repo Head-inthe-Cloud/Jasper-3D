@@ -1,4 +1,4 @@
-import React from "react";
+import {useState, useEffect} from "react";
 import {
 	StyleSheet,
 	Dimensions,
@@ -18,16 +18,42 @@ const { width } = Dimensions.get("screen");
 // Database
 
 const Home = ({ route, navigation }) => {
-	const { items } = route.params;
+	const [allItems, setAllItems] = useState({});
+
+	useEffect(() => {
+		const db = getDatabase();
+		const allItemsRef = dbRef(db, "allItems");
+
+		const allItemsOffFunction = onValue(allItemsRef, (snapshot) => {
+			const newAllItems = snapshot.val();
+			setAllItems(newAllItems);
+		});
+
+		function cleanUp() {
+			allItemsOffFunction();
+		}
+
+		return cleanUp;
+	}, []);
+
+	// Need to add search functionality
+
+	const items = allItems;
+
 
 	// sort items by date
-	let datePairs = Object.keys(items).map((key) => [
-		key,
-		items[key].createDate,
-	]);
-	datePairs.sort((first, second) => {
-		return second[1] - first[1];
-	});
+	let datePairs;
+	if(items){
+		datePairs = Object.keys(items).map((key) => [
+			key,
+			items[key].createDate,
+		]);
+		datePairs.sort((first, second) => {
+			return second[1] - first[1];
+		});
+	}else{
+		datePairs=[];
+	}
 	const sortedItemKeys = datePairs.map((pair) => pair[0]);
 
 	const renderItems = () => {
