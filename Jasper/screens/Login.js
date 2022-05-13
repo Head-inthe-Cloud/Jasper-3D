@@ -1,11 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Dimensions, Text } from "react-native";
 import { Block, theme } from "galio-framework";
 //import { ShoppingHome } from "../assets/imgs";
 import {
 	auth,
-	signInWithEmailAndPassword,
+	db,
 	signInWithGoogle,
+	logInWithEmailAndPassword,
+	registerWithEmailAndPassword,
+	sendPasswordReset,
+	logout,
 } from "../firebase.js";
 import { useAuthState } from "react-firebase-hooks/auth";
 
