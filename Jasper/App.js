@@ -1,93 +1,43 @@
 import { useState, useEffect } from "react";
-import { Image } from "react-native";
-import AppLoading from "expo-app-loading";
-import { useFonts } from "@use-expo/font";
-import { Asset } from "expo-asset";
 import { Block, GalioProvider } from "galio-framework";
 import { NavigationContainer } from "@react-navigation/native";
+import * as Linking from 'expo-linking';
 
 // Before rendering any navigation stack
 import { enableScreens } from "react-native-screens";
 enableScreens();
 
 // Firebase
-import { useAuthState } from "react-firebase-hooks/auth";
-import { getAuth } from "firebase/auth";
-import {
-	getDatabase,
-	ref,
-	set as firebaseSet,
-	onValue,
-} from "firebase/database";
-
+import { initializeApp } from 'firebase/app';
 import Screens from "./Screens";
+import Loading from "./screens/Loading";
 import { Images, Theme } from "./constants";
 
-// cache app images
-const assetImages = [
-	Images.CherryBlossom,
-	Images.Landing,
-	Images.LogoLanding,
-	Images.PaymentOptionLogos.PayPal,
-	Images.PaymentOptionLogos.Venmo,
-	Images.PaymentOptionLogos.WeChat,
-	Images.PaymentOptionLogos.Zelle,
-];
+const firebaseConfig = {
+    apiKey: "AIzaSyDoO-15TP38J4Gzz4BlI3rFucgYkymFs04",
+    authDomain: "uwjasper.firebaseapp.com",
+    databaseURL: "https://uwjasper-default-rtdb.firebaseio.com",
+    projectId: "uwjasper",
+    storageBucket: "uwjasper.appspot.com",
+    messagingSenderId: "393140379927",
+    appId: "1:393140379927:web:09b62a59258415ffcad752",
+    measurementId: "G-VQBW4GV8Z1"
+};
+const app = initializeApp(firebaseConfig);
 
-// // cache product images
-// const itemList = Object.keys(items).map((key) => items[key]);
-// itemList.map((item) => item.images.map((image) => assetImages.push(image)));
+const prefix = Linking.createURL('/');
 
-function cacheImages(images) {
-	return images.map((image) => {
-		if (typeof image === "string") {
-			return Image.prefetch(image);
-		} else {
-			return Asset.fromModule(image).downloadAsync();
-		}
-	});
+function App(props) {
+	const linking = {prefixes: [prefix]}
+	return (
+		<NavigationContainer linking={linking}>
+			<GalioProvider theme={Theme}>
+				<Block flex>
+					<Screens />
+				</Block>
+			</GalioProvider>
+		</NavigationContainer>
+	);
 }
 
-export default (props) => {
-	const [isLoadingComplete, setLoading] = useState(false);
-	let [fontsLoaded] = useFonts({
-		ArgonExtra: require("./assets/font/argon.ttf"),
-	});
-
-	function _loadResourcesAsync() {
-		return Promise.all([...cacheImages(assetImages)]);
-	}
-
-	function _handleLoadingError(error) {
-		// In this case, you might want to report the error to your error
-		// reporting service, for example Sentry
-		console.warn(error);
-	}
-
-	function _handleFinishLoading() {
-		setLoading(true);
-	}
-
-	if (!fontsLoaded && !isLoadingComplete) {
-		return (
-			<AppLoading
-				startAsync={_loadResourcesAsync}
-				onError={_handleLoadingError}
-				onFinish={_handleFinishLoading}
-			/>
-		);
-	} else if (fontsLoaded) {
-		return (
-			<NavigationContainer>
-				<GalioProvider theme={Theme}>
-					<Block flex>
-						<Screens
-						/>
-					</Block>
-				</GalioProvider>
-			</NavigationContainer>
-		);
-	} else {
-		return null;
-	}
-};
+export default App;
