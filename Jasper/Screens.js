@@ -10,10 +10,10 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { getAuth } from "firebase/auth";
 import {
-	getDatabase,
-	ref as dbRef,
-	set as firebaseSet,
-	onValue,
+  getDatabase,
+  ref as dbRef,
+  set as firebaseSet,
+  onValue,
 } from "firebase/database";
 
 // screens
@@ -30,28 +30,30 @@ import SignUp from "./screens/SignUp";
 import MessageCenter from "./screens/MessageCenter";
 import Chat from "./screens/Chat";
 import PostDone from "./screens/PostDone";
+import Support from "./screens/Support";
 
 import { items, users } from "./constants/mockData";
+import SupportDone from "./screens/SupportDone";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const CustomTabBarButton = ({ children, onPress }) => (
-	<TouchableOpacity
-		style={[styles.customButton, styles.shadow]}
-		onPress={onPress}
-	>
-		<View
-			style={{
-				width: 70,
-				height: 70,
-				borderRadius: 35,
-				backgroundColor: Theme.COLORS.PRIMARY,
-			}}
-		>
-			{children}
-		</View>
-	</TouchableOpacity>
+  <TouchableOpacity
+    style={[styles.customButton, styles.shadow]}
+    onPress={onPress}
+  >
+    <View
+      style={{
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        backgroundColor: Theme.COLORS.PRIMARY,
+      }}
+    >
+      {children}
+    </View>
+  </TouchableOpacity>
 );
 
 function SavedStack({ route }) {
@@ -362,6 +364,39 @@ function LandingStack(props) {
 				}}
 			/>
 			<Stack.Screen
+				name="Support"
+				component={Support}
+				initialParams={{
+					userId: userId,
+				}}
+				options={{
+					header: ({ navigation, scene}) => (
+						<Header
+							title="Support"
+							back
+							navigation={navigation}
+							scene={scene}
+						/>
+					),
+					headerShown: true,
+				}}
+			/>
+			<Stack.Screen
+				name="SupportDone"
+				component={SupportDone}
+				options={{
+					header: ({ navigation, scene}) => (
+						<Header
+							title="Support Done"
+							back
+							navigation={navigation}
+							scene={scene}
+						/>
+					),
+					headerShown: true,
+				}}
+			/>
+			<Stack.Screen
 				name="Chat"
 				component={Chat}
 				initialParams={{
@@ -576,28 +611,28 @@ function AppTabs({ route }) {
 }
 
 const styles = StyleSheet.create({
-	shadow: {
-		shadowColor: Theme.COLORS.BLACK,
-		shadowOffset: { width: 0, height: 2 },
-		shadowRadius: 4,
-		shadowOpacity: 0.1,
-		elevation: 5,
-	},
-	bottomNav: {
-		position: "absolute",
-		bottom: 25,
-		left: 20,
-		right: 20,
-		elevation: 0,
-		backgroundColor: Theme.COLORS.WHITE,
-		borderRadius: 15,
-		height: 90,
-	},
-	customButton: {
-		top: -30,
-		justifyContent: "center",
-		alignItems: "center",
-	},
+  shadow: {
+    shadowColor: Theme.COLORS.BLACK,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    shadowOpacity: 0.1,
+    elevation: 5,
+  },
+  bottomNav: {
+    position: "absolute",
+    bottom: 25,
+    left: 20,
+    right: 20,
+    elevation: 0,
+    backgroundColor: Theme.COLORS.WHITE,
+    borderRadius: 15,
+    height: 90,
+  },
+  customButton: {
+    top: -30,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });
 
 export default LandingStack;
