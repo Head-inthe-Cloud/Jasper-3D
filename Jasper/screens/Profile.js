@@ -14,7 +14,13 @@ import {
 	set as firebaseSet,
 	onValue,
 } from "firebase/database";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import {
+	getStorage,
+	ref as storageRef,
+	uploadBytes,
+	getDownloadURL,
+	deleteObject,
+} from "firebase/storage";
 import { logout } from "../firebase";
 
 import { Button, Card, Icon } from "../components";
@@ -40,7 +46,6 @@ function Profile({ route, navigation }) {
 	const [displayedPaymentOption, setDisplayedPaymentOption] = useState([]);
 
 	const inputBoxRef = useRef(null);
-
 
 	useEffect(() => {
 		const db = getDatabase();
@@ -97,11 +102,15 @@ function Profile({ route, navigation }) {
 		const newUserData = { ...userData };
 		newUserData.paymentOptions[paymentOption] = null;
 		firebaseSet(userDataRef, newUserData);
-		const imgPath = "userData/" + userId + "/" + "paymentOptions/" + paymentOption + '.jpg';
+		const imgPath =
+			"userData/" +
+			userId +
+			"/" +
+			"paymentOptions/" +
+			paymentOption +
+			".jpg";
 		const imgRef = storageRef(storage, imgPath);
 		deleteObject(imgRef);
-		
-
 	};
 
 	const handleChoosePhoto = async (imageField) => {
@@ -115,7 +124,7 @@ function Profile({ route, navigation }) {
 		const result = await ImagePicker.launchImageLibraryAsync(options);
 		const uriSplit = result.uri.split("/");
 		const imgName = uriSplit[uriSplit.length - 1];
-		let imgPath = "userData/" + userId + "/" + imageField + '.jpg';
+		let imgPath = "userData/" + userId + "/" + imageField + ".jpg";
 		const imgRef = storageRef(storage, imgPath);
 		const response = await fetch(result.uri);
 		const blob = await response.blob();
@@ -128,12 +137,10 @@ function Profile({ route, navigation }) {
 		if (imageField.includes("/")) {
 			const fields = imageField.split("/");
 			if (newUserData[fields[0]]) {
-				newUserData[fields[0]][fields[1]] =
-					remoteUrl;
+				newUserData[fields[0]][fields[1]] = remoteUrl;
 			} else {
 				newUserData[fields[0]] = {};
-				newUserData[fields[0]][fields[1]] =
-					remoteUrl;
+				newUserData[fields[0]][fields[1]] = remoteUrl;
 			}
 		} else {
 			newUserData[imageField] = remoteUrl;
@@ -505,7 +512,7 @@ function Profile({ route, navigation }) {
 				>
 					<ScrollView
 						showsVerticalScrollIndicator={false}
-						style={{ width, marginTop: "25%" }}
+						style={{ width, marginTop: "15%" }}
 					>
 						<Block flex style={styles.profileCard}>
 							<Block middle style={styles.avatarContainer}>
@@ -662,16 +669,7 @@ function Profile({ route, navigation }) {
 										/>
 									</Block>
 								</Block>
-								<Block
-									middle
-									style={{
-										marginTop: 30,
-										marginBottom: 16,
-									}}
-								>
-									<Block style={styles.divider} />
-								</Block>
-								<Block middle>
+								<Block middle style={{ marginTop: 20 }}>
 									<Text
 										size={16}
 										color="#525F7F"
@@ -691,6 +689,15 @@ function Profile({ route, navigation }) {
 									>
 										Edit
 									</Button>
+								</Block>
+								<Block
+									middle
+									style={{
+										marginTop: 30,
+										marginBottom: 16,
+									}}
+								>
+									<Block style={styles.divider} />
 								</Block>
 								<Block row space="between">
 									<Text
@@ -776,8 +783,16 @@ function Profile({ route, navigation }) {
 									}}
 								>
 									<Button
-										onPress={async() => {
-											await logout();
+										style={{
+											width: width - theme.SIZES.BASE * 6,
+											marginTop: 20,
+											justifyContent: "center",
+											alignItems: "center",
+											borderRadius: 30,
+										}}
+										textStyle={{ fontSize: 15, fontWeight: "600" }}
+										onPress={() => {
+											logout();
 											navigation.navigate("Login");
 										}}
 									>
@@ -808,7 +823,6 @@ const styles = StyleSheet.create({
 	},
 	profileBackground: {
 		width: width,
-		height: height / 2,
 	},
 	profileCard: {
 		// position: "relative",

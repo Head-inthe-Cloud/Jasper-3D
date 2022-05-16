@@ -149,7 +149,7 @@ function ProfileStack({ route, navigation }) {
 						/>
 					),
 					cardStyle: { backgroundColor: "#FFFFFF" },
-					headerTransparent: true,
+					headerShown: false
 				}}
 			/>
 		</Stack.Navigator>

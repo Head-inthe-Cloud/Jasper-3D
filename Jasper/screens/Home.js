@@ -99,16 +99,11 @@ const Home = ({ route, navigation }) => {
 								row
 								middle
 								space="between"
-								style={{ paddingTop: 7 }}
+								style={{ paddingTop: 7, right: 10 }}
 							>
-								<Text h4 style={styles.title}>
+								<Text h4 >
 									Latest Posts
 								</Text>
-								<Icon
-									name="chevron-right"
-									family="entypo"
-									style={{ paddingRight: 5 }}
-								/>
 							</Block>
 						</Block>
 					</Block>
@@ -127,9 +122,6 @@ const styles = StyleSheet.create({
 	articles: {
 		width: width - theme.SIZES.BASE * 2,
 		paddingVertical: theme.SIZES.BASE,
-	},
-	title: {
-		textDecorationLine: "underline",
 	},
 });
 
