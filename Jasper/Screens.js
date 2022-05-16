@@ -7,13 +7,13 @@ import { Theme, tabs } from "./constants";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 // Firebase
-import { useAuthState } from "react-firebase-hooks/auth";
-import { getAuth } from "firebase/auth";
+import { auth } from "./firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import {
-  getDatabase,
-  ref as dbRef,
-  set as firebaseSet,
-  onValue,
+	getDatabase,
+	ref as dbRef,
+	set as firebaseSet,
+	onValue,
 } from "firebase/database";
 
 // screens
@@ -34,26 +34,27 @@ import Support from "./screens/Support";
 
 import { items, users } from "./constants/mockData";
 import SupportDone from "./screens/SupportDone";
+import Loading from "./screens/Loading";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const CustomTabBarButton = ({ children, onPress }) => (
-  <TouchableOpacity
-    style={[styles.customButton, styles.shadow]}
-    onPress={onPress}
-  >
-    <View
-      style={{
-        width: 70,
-        height: 70,
-        borderRadius: 35,
-        backgroundColor: Theme.COLORS.PRIMARY,
-      }}
-    >
-      {children}
-    </View>
-  </TouchableOpacity>
+	<TouchableOpacity
+		style={[styles.customButton, styles.shadow]}
+		onPress={onPress}
+	>
+		<View
+			style={{
+				width: 70,
+				height: 70,
+				borderRadius: 35,
+				backgroundColor: Theme.COLORS.PRIMARY,
+			}}
+		>
+			{children}
+		</View>
+	</TouchableOpacity>
 );
 
 function SavedStack({ route }) {
@@ -286,14 +287,18 @@ function HomeStack({ route }) {
 	);
 }
 
-function LandingStack(props) {
+function LandingStack({ navigation }) {
 	// Database
-	// const [userId, loading] = useAuthState(getAuth());
-
-	const userId = "u00001";
+	const [userId, setUserId] = useState("");
 	const [allItems, setAllItems] = useState({});
 	const [users, setUsers] = useState({});
 	const [conversations, setConversations] = useState({});
+
+	onAuthStateChanged(auth, (user) => {
+		if (user) {
+			setUserId(user.uid);
+		}
+	});
 
 	useEffect(() => {
 		const db = getDatabase();
@@ -335,6 +340,10 @@ function LandingStack(props) {
 		return cleanUp;
 	}, []);
 
+	if(!allItems || !users || !conversations){
+		return <Loading />;
+	}
+
 	return (
 		<Stack.Navigator
 			screenOptions={{
@@ -350,8 +359,36 @@ function LandingStack(props) {
 				}}
 			/>
 			<Stack.Screen name="Login" component={Login} />
-			<Stack.Screen name="SignUp" component={SignUp} />
-			<Stack.Screen name="Recovery" component={Recovery} />
+			<Stack.Screen
+				name="SignUp"
+				component={SignUp}
+				options={{
+					header: ({ navigation, scene }) => (
+						<Header
+							title="Sign up"
+							back
+							navigation={navigation}
+							scene={scene}
+						/>
+					),
+					headerShown: true,
+				}}
+			/>
+			<Stack.Screen
+				name="Recovery"
+				component={Recovery}
+				options={{
+					header: ({ navigation, scene }) => (
+						<Header
+							title="Account Recovery"
+							back
+							navigation={navigation}
+							scene={scene}
+						/>
+					),
+					headerShown: true,
+				}}
+			/>
 
 			<Stack.Screen
 				name="App"
@@ -370,7 +407,7 @@ function LandingStack(props) {
 					userId: userId,
 				}}
 				options={{
-					header: ({ navigation, scene}) => (
+					header: ({ navigation, scene }) => (
 						<Header
 							title="Support"
 							back
@@ -385,7 +422,7 @@ function LandingStack(props) {
 				name="SupportDone"
 				component={SupportDone}
 				options={{
-					header: ({ navigation, scene}) => (
+					header: ({ navigation, scene }) => (
 						<Header
 							title="Support Done"
 							back
@@ -401,8 +438,10 @@ function LandingStack(props) {
 				component={Chat}
 				initialParams={{
 					allItems: allItems,
-					
-					conversations: conversations, users: users, userId: userId,
+
+					conversations: conversations,
+					users: users,
+					userId: userId,
 				}}
 				options={{
 					header: ({ navigation, scene }) => (
@@ -422,6 +461,7 @@ function LandingStack(props) {
 				component={Detail}
 				initialParams={{
 					allItems: allItems,
+					users: users,
 					userId: userId,
 				}}
 				options={{
@@ -611,28 +651,28 @@ function AppTabs({ route }) {
 }
 
 const styles = StyleSheet.create({
-  shadow: {
-    shadowColor: Theme.COLORS.BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    shadowOpacity: 0.1,
-    elevation: 5,
-  },
-  bottomNav: {
-    position: "absolute",
-    bottom: 25,
-    left: 20,
-    right: 20,
-    elevation: 0,
-    backgroundColor: Theme.COLORS.WHITE,
-    borderRadius: 15,
-    height: 90,
-  },
-  customButton: {
-    top: -30,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+	shadow: {
+		shadowColor: Theme.COLORS.BLACK,
+		shadowOffset: { width: 0, height: 2 },
+		shadowRadius: 4,
+		shadowOpacity: 0.1,
+		elevation: 5,
+	},
+	bottomNav: {
+		position: "absolute",
+		bottom: 25,
+		left: 20,
+		right: 20,
+		elevation: 0,
+		backgroundColor: Theme.COLORS.WHITE,
+		borderRadius: 15,
+		height: 90,
+	},
+	customButton: {
+		top: -30,
+		justifyContent: "center",
+		alignItems: "center",
+	},
 });
 
 export default LandingStack;

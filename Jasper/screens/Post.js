@@ -121,6 +121,7 @@ function Post({ route, navigation }) {
 				sellerId: userId,
 				createDate: today.toISOString().slice(0, -14),
 				condition: condition,
+				category: category,
 				title: title,
 				description: description,
 				images: mediaData.map((data) => data.data),
@@ -160,6 +161,9 @@ function Post({ route, navigation }) {
 			newItem.itemId = itemId;
 			const itemRef = dbRef(db, "allItems/" + itemId);
 			firebaseSet(itemRef, newItem);
+
+			const userRef = dbRef(db, 'users/' + userId);
+			const newPostedItems = 
 
 			navigation.navigate("PostDone");
 			console.warn("Upload success");

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 //argon
 import { Theme } from "../constants/";
-import { conversations, users } from "../constants/mockData";
+// import { conversations, users } from "../constants/mockData";
 
 import { Button, Card, Icon } from "../components/";
 import Loading from "./Loading";
@@ -33,7 +33,7 @@ const thumbMeasure = (width - 48 - 32) / 3;
 const cardWidth = width - theme.SIZES.BASE * 2;
 
 function Detail({ route, navigation }) {
-	const { conversationsOverview, itemId, userId } = route.params;
+	const { conversationsOverview, itemId, users, userId } = route.params;
 	const [allItems, setAllItems] = useState({});
 
 	useEffect(() => {

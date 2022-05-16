@@ -1,11 +1,11 @@
-import { Block, Text} from "galio-framework";
+import { Block, Text } from "galio-framework";
 
 
 export default function Loading(){
 
     return(
-        <Block>
-            <Text>
+        <Block flex middle>
+            <Text size={30}>
                 Loading ... 
             </Text>
         </Block>

@@ -14,6 +14,7 @@ import {
 	set as firebaseSet,
 	onValue,
 } from "firebase/database";
+import { logout } from "../firebase";
 
 import { Button, Card, Icon } from "../components";
 import { Images, Theme } from "../constants";
@@ -42,13 +43,6 @@ function Profile({ route, navigation }) {
 	useEffect(() => {
 		const db = getDatabase();
 		const userDataRef = dbRef(db, "users/" + userId);
-
-		// Upload temp data to database
-		// ***************************f**********
-		// firebaseSet(usersRef, users);
-		// firebaseSet(allItemsRef, items);
-
-		// *************************************
 
 		const userDataOffFunction = onValue(userDataRef, (snapshot) => {
 			const newUserData = snapshot.val();
@@ -84,13 +78,12 @@ function Profile({ route, navigation }) {
 		let newUserData = { ...userData };
 		if (editInfoField.includes("/")) {
 			const fields = editInfoField.split("/");
-			if(newUserData[fields[0]]){
+			if (newUserData[fields[0]]) {
 				newUserData[fields[0]][fields[1]] = text;
 			} else {
 				newUserData[fields[0]] = {};
 				newUserData[fields[0]][fields[1]] = text;
 			}
-			
 		} else {
 			newUserData[editInfoField] = text;
 		}
@@ -114,18 +107,19 @@ function Profile({ route, navigation }) {
 		const result = await ImagePicker.launchImageLibraryAsync(options);
 		let newUserData = { ...userData };
 
-		if(result.base64){
+		if (result.base64) {
 			if (imageField.includes("/")) {
 				const fields = imageField.split("/");
-				if(newUserData[fields[0]]){
-					newUserData[fields[0]][fields[1]] = "data:image/jpeg;base64," + result.base64;
+				if (newUserData[fields[0]]) {
+					newUserData[fields[0]][fields[1]] =
+						"data:image/jpeg;base64," + result.base64;
 				} else {
 					newUserData[fields[0]] = {};
-					newUserData[fields[0]][fields[1]] = "data:image/jpeg;base64," + result.base64;
+					newUserData[fields[0]][fields[1]] =
+						"data:image/jpeg;base64," + result.base64;
 				}
-				
 			} else {
-				newUserData[field] = "data:image/jpeg;base64," + result.base64;
+				newUserData[imageField] = "data:image/jpeg;base64," + result.base64;
 			}
 			firebaseSet(userDataRef, newUserData);
 		}
@@ -155,16 +149,61 @@ function Profile({ route, navigation }) {
 		}
 	};
 
+	const renderPostedItems = () => {
+		if (
+			userData.postedItems.length === 1 &&
+			userData.postedItems[0] === "default"
+		) {
+			return <Text style={{marginVertical: 10}} size={15}>Seems like you haven't posted any item yet</Text>;
+		} else {
+			return userData.postedItems
+				.filter((id) => id !== "default")
+				.map((itemId, idx) => (
+					<Block flex row key={"posted-" + idx}>
+						<Card
+							item={allItems[itemId]}
+							style={{
+								width: 150,
+								marginHorizontal: theme.SIZES.BASE,
+							}}
+						/>
+					</Block>
+				));
+		}
+	};
+
+	const renderSavedItems = () => {
+		if (
+			userData.savedItems.length === 1 &&
+			userData.savedItems[0] === "default"
+		) {
+			return <Text style={{marginVertical: 10, marginLeft: 7}} size={15}>Seems like you haven't saved any item yet </Text>;
+		} else {
+			return userData.savedItems
+				.filter((id) => id !== "default")
+				.slice(0, 3)
+				.map((itemId, idx) => (
+					<Image
+						source={{
+							uri: allItems[itemId].images[0],
+						}}
+						key={`viewed-${idx}`}
+						resizeMode="cover"
+						style={styles.thumb}
+					/>
+				));
+		}
+	};
+
 	const textInputBox = () => {
 		let displayedTextValue;
 		if (editInfoField.includes("/")) {
 			const fields = editInfoField.split("/");
-			if(userData[fields[0]]){
+			if (userData[fields[0]]) {
 				displayedTextValue = userData[fields[0]][fields[1]];
 			} else {
 				displayedTextValue = "";
 			}
-			
 		} else {
 			displayedTextValue = userData[editInfoField];
 		}
@@ -203,11 +242,18 @@ function Profile({ route, navigation }) {
 		let existingPaymentOptions = [];
 		if (userData.paymentOptions) {
 			existingPaymentOptions = Object.keys(userData.paymentOptions);
-			paymentOptions = existingPaymentOptions.concat(
-				paymentOptions.filter(
-					(option) => !existingPaymentOptions.includes(option)
+			if (
+				!(
+					existingPaymentOptions.length === 1 &&
+					existingPaymentOptions[0] === "default"
 				)
-			);
+			) {
+				paymentOptions = existingPaymentOptions.concat(
+					paymentOptions.filter(
+						(option) => !existingPaymentOptions.includes(option)
+					)
+				);
+			}
 		}
 
 		const toggleDisplayPaymentOption = (paymentOption) => {
@@ -225,7 +271,10 @@ function Profile({ route, navigation }) {
 		};
 
 		const renderPaymentOption = (paymentOption) => {
-			if (userData.paymentOptions && Object.keys(userData.paymentOptions).includes(paymentOption)) {
+			if (
+				userData.paymentOptions &&
+				Object.keys(userData.paymentOptions).includes(paymentOption)
+			) {
 				const paymentData = userData.paymentOptions[paymentOption];
 				let dataType;
 				if (paymentData.includes("data:image/jpeg;base64")) {
@@ -368,7 +417,9 @@ function Profile({ route, navigation }) {
 										marginHorizontal: theme.SIZES.BASE,
 									}}
 									onPress={() =>
-										handleEditInfo("paymentOptions/" + paymentOption)
+										handleEditInfo(
+											"paymentOptions/" + paymentOption
+										)
 									}
 								>
 									Upload Text
@@ -379,7 +430,11 @@ function Profile({ route, navigation }) {
 										width: 130,
 										marginHorizontal: theme.SIZES.BASE,
 									}}
-									onPress={() => handleChoosePhoto("paymentOptions/" + paymentOption)}
+									onPress={() =>
+										handleChoosePhoto(
+											"paymentOptions/" + paymentOption
+										)
+									}
 								>
 									Upload Image
 								</Button>
@@ -393,7 +448,7 @@ function Profile({ route, navigation }) {
 		return (
 			<Block
 				style={{
-					paddingBottom: HeaderHeight * 2,
+					paddingBottom: HeaderHeight,
 				}}
 			>
 				<ScrollView
@@ -465,7 +520,11 @@ function Profile({ route, navigation }) {
 											color="#525F7F"
 											style={{ marginBottom: 4 }}
 										>
-											{userData.postedItems.length}
+											{
+												userData.postedItems.filter(
+													(id) => id !== "default"
+												).length
+											}
 										</Text>
 										<Text
 											size={12}
@@ -481,7 +540,11 @@ function Profile({ route, navigation }) {
 											size={18}
 											style={{ marginBottom: 4 }}
 										>
-											{userData.savedItems.length}
+											{
+												userData.savedItems.filter(
+													(id) => id !== "default"
+												).length
+											}
 										</Text>
 										<Text
 											size={12}
@@ -639,19 +702,7 @@ function Profile({ route, navigation }) {
 										space="between"
 										style={{ flexWrap: "wrap" }}
 									>
-										{userData.savedItems
-											.slice(0, 3)
-											.map((itemId, idx) => (
-												<Image
-													source={{
-														uri: allItems[itemId]
-															.images[0],
-													}}
-													key={`viewed-${idx}`}
-													resizeMode="cover"
-													style={styles.thumb}
-												/>
-											))}
+										{renderSavedItems()}
 									</Block>
 								</Block>
 								<Block row space="between">
@@ -664,8 +715,7 @@ function Profile({ route, navigation }) {
 										Posted Items
 									</Text>
 								</Block>
-								<Block
-								>
+								<Block>
 									<ScrollView
 										horizontal={true}
 										pagingEnabled={true}
@@ -681,25 +731,7 @@ function Profile({ route, navigation }) {
 												theme.SIZES.BASE / 2,
 										}}
 									>
-										{userData.postedItems.map(
-											(itemId, idx) => (
-												<Block
-													flex
-													row
-													key={"posted-" + idx}
-												>
-													<Card
-														item={allItems[itemId]}
-														style={{
-															width: 150,
-															marginHorizontal:
-																theme.SIZES
-																	.BASE,
-														}}
-													/>
-												</Block>
-											)
-										)}
+										{renderPostedItems()}
 									</ScrollView>
 								</Block>
 								<Block space="between">
@@ -713,6 +745,21 @@ function Profile({ route, navigation }) {
 									</Text>
 								</Block>
 								{renderPaymentInformation()}
+								<Block
+									center
+									style={{
+										paddingBottom: HeaderHeight * 2,
+									}}
+								>
+									<Button
+										onPress={() => {
+											logout();
+											navigation.navigate("Login");
+										}}
+									>
+										Log Out
+									</Button>
+								</Block>
 							</Block>
 						</Block>
 					</ScrollView>
@@ -765,6 +812,7 @@ const styles = StyleSheet.create({
 		height: 124,
 		borderRadius: 62,
 		borderWidth: 0,
+		resizeMode: "cover",
 	},
 	nameInfo: {
 		marginTop: 20,

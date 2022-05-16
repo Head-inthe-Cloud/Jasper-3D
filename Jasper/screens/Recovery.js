@@ -1,17 +1,24 @@
-import React from "react";
-import {
-	StyleSheet,
-	Dimensions,
-	View,
-} from "react-native";
+import React, { useState } from "react";
+import { StyleSheet, Dimensions, View } from "react-native";
 import { Block, Text, theme } from "galio-framework";
 
 import { Button, Icon, Input } from "../components";
+import { sendPasswordReset } from "../firebase";
 import { Theme } from "../constants";
 
 const { width, height } = Dimensions.get("screen");
 
 const Recovery = ({ navigation }) => {
+	const [email, setEmail] = useState("");
+
+	const handleSendEmail = () => {
+		if(email.includes("@")){
+			sendPasswordReset(email);
+			navigation.navigate("Login");
+		} else {
+			alert("Please fill in your email and password");
+		}
+	};
 	return (
 		<View style={styles.container}>
 			<Text>Send a password recovery email</Text>
@@ -19,19 +26,13 @@ const Recovery = ({ navigation }) => {
 				<Input
 					placeholder="Account Email"
 					placeholderTextColor="#6314AB"
-					iconContent={
-						<Icon
-							size={11}
-							style={{ marginRight: 10 }}
-							color={Theme.COLORS.ICON}
-							name="search-zoom-in"
-							family="ArgonExtra"
-						/>
-					}
+					iconContent={<Block />}
+					value={email}
+					onChangeText={(text) => setEmail(text)}
 				/>
 			</Block>
-			<Button onPress={() => navigation.navigate("Login")}>
-				Recover Account
+			<Button onPress={() => handleSendEmail()}>
+				Send Recovery Email
 			</Button>
 		</View>
 	);

@@ -23,15 +23,30 @@ function Saved({ route, navigation }) {
 	const { allItems, userData } = route.params;
 	const savedItemIds = userData.savedItems;
 
+	const renderSavedItems = () => {
+		if (savedItemIds.length === 1 && savedItemIds[0] === "default") {
+			<Text>
+				Seems like you haven't save any item yet! Click the heart icon
+				on the top right of the detail page to save your favorite items!
+			</Text>;
+		} else {
+			return savedItemIds.map((itemId) => (
+				<Card
+					item={allItems[itemId]}
+					horizontal
+					key={"saved_" + itemId}
+					userData={userData}
+				/>
+			));
+		}
+	};
 	return (
 		<Block flex center>
 			<ScrollView>
 				<Block flex style={styles.group}>
 					<Block flex>
 						<Block style={{ paddingHorizontal: theme.SIZES.BASE }}>
-							{savedItemIds.map((itemId) => (
-								<Card item={allItems[itemId]} horizontal key={"saved_" + itemId} userData={userData}/>
-							))}
+							{renderSavedItems()}
 							<Block flex card shadow style={styles.category}>
 								<ImageBackground
 									source={Images.CherryBlossom}
@@ -47,7 +62,12 @@ function Saved({ route, navigation }) {
 										height: 252,
 									}}
 								>
-									<TouchableOpacity onPress={() => navigation.navigate("Home")} style={styles.categoryTitle}>
+									<TouchableOpacity
+										onPress={() =>
+											navigation.navigate("Home")
+										}
+										style={styles.categoryTitle}
+									>
 										<Text
 											size={18}
 											bold
