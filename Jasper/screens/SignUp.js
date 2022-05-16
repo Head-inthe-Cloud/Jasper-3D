@@ -18,7 +18,6 @@ import { onAuthStateChanged } from "@firebase/auth";
 const { width, height } = Dimensions.get("screen");
 
 // const provider = new GoogleAuthProvider();
-const auth = getAuth();
 
 const SignUp = ({ navigation }) => {
 	const [email, setEmail] = useState("");

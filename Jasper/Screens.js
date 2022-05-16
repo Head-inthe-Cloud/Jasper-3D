@@ -35,7 +35,6 @@ import Loading from "./screens/Loading";
 
 // import { items, users, conversations } from "./constants/mockData";
 import SupportDone from "./screens/SupportDone";
-import Loading from "./screens/Loading";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
