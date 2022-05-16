@@ -58,6 +58,8 @@ const Chat = ({ route, navigation }) => {
 		const subjectData = users[subjectId];
 		const itemId = conversation.itemId;
 		const db = getDatabase();
+		const conversationRef = dbRef(db, "conversations/" + conversationId);
+
 		let itemData = allItems[itemId];
 
 		const handleDeleteItem = (itemId) => {
@@ -483,6 +485,12 @@ const Chat = ({ route, navigation }) => {
 			}
 		};
 
+		const endConversation = () =>{
+			const newConversation = {...conversation};
+			newConversation.tradeEnded = true;
+			firebaseSet(conversationRef, newConversation);
+		}
+
 		const renderPaymentOptions = () => {
 			if (!userData.paymentOptions) {
 				return;
@@ -492,10 +500,10 @@ const Chat = ({ route, navigation }) => {
 					style={{}}
 					key={"chat-" + paymentOption}
 					onPress={() =>
-						handleSentMessage(
+						{handleSentMessage(
 							"paymentInfo",
 							userData.paymentOptions[paymentOption]
-						)
+						); endConversation()}
 					}
 				>
 					<Image
@@ -510,6 +518,8 @@ const Chat = ({ route, navigation }) => {
 				</TouchableOpacity>
 			));
 		};
+
+
 		return (
 			<Block flex center style={styles.home}>
 				<ScrollView

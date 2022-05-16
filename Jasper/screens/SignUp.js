@@ -1,14 +1,24 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { StyleSheet, Image, Dimensions, View, ScrollView } from "react-native";
 import { Block, Text, theme } from "galio-framework";
 
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+
 import { Button, Icon, Input } from "../components";
 import { Theme } from "../constants";
+import {
+	getDatabase,
+	ref as dbRef,
+	set as firebaseSet,
+} from "firebase/database";
 
 import { auth, logout, registerWithEmailAndPassword } from "../firebase";
 import { onAuthStateChanged } from "@firebase/auth";
 
 const { width, height } = Dimensions.get("screen");
+
+// const provider = new GoogleAuthProvider();
+const auth = getAuth();
 
 const SignUp = ({ navigation }) => {
 	const [email, setEmail] = useState("");

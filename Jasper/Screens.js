@@ -31,13 +31,15 @@ import MessageCenter from "./screens/MessageCenter";
 import Chat from "./screens/Chat";
 import PostDone from "./screens/PostDone";
 import Support from "./screens/Support";
+import Loading from "./screens/Loading";
 
-import { items, users } from "./constants/mockData";
+// import { items, users, conversations } from "./constants/mockData";
 import SupportDone from "./screens/SupportDone";
 import Loading from "./screens/Loading";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
+
 
 const CustomTabBarButton = ({ children, onPress }) => (
 	<TouchableOpacity
@@ -307,9 +309,10 @@ function LandingStack({ navigation }) {
 		const conversationsRef = dbRef(db, "conversations");
 
 		// Upload temp data to database
-		// ***************************f**********
+		// *************************************
 		// firebaseSet(usersRef, users);
 		// firebaseSet(allItemsRef, items);
+		// firebaseSet(conversationsRef, conversations);
 
 		// *************************************
 

@@ -1,7 +1,6 @@
 import React, { useEffect, useReducer, useState } from "react";
 import { Dimensions, Text, ScrollView } from "react-native";
 import { Block, theme } from "galio-framework";
-//import { ShoppingHome } from "../assets/imgs";
 import {
 	auth,
 	db,
@@ -17,6 +16,7 @@ import { getAuth, onAuthStateChanged } from "@firebase/auth";
 import { Icon, Input, Button } from "../components/";
 import { Theme } from "../constants/";
 import { StyleSheet, Image } from "react-native";
+import { createURL } from "expo-linking";
 
 const { width } = Dimensions.get("screen");
 

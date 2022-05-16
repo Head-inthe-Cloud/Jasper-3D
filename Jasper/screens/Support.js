@@ -29,6 +29,10 @@ const Support = ({ route, navigation }) => {
 	const [description, setDescription] = useState("");
 
 	const handleSubmit = () => {
+
+    if(subject.length === 0 || description.length === 0){
+      return;
+    }
 		const db = getDatabase();
 		const supportRef = dbRef(db, "supportRequests");
 
