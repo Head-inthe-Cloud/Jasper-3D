@@ -180,7 +180,7 @@ function Post({ route, navigation }) {
 					firebaseSet(userRef, newUserData);
 				}
 			});
-
+			
 			navigation.navigate("PostDone");
 			console.warn("Upload success");
 		} else {

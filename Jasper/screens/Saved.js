@@ -30,7 +30,7 @@ function Saved({ route, navigation }) {
 				on the top right of the detail page to save your favorite items!
 			</Text>;
 		} else {
-			return savedItemIds.map((itemId) => (
+			return savedItemIds.filter(id => id !== 'default').map((itemId) => (
 				<Card
 					item={allItems[itemId]}
 					horizontal

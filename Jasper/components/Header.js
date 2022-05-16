@@ -24,15 +24,15 @@ const iPhoneX = () =>
 	(height === 812 || width === 812 || height === 896 || width === 896);
 
 function Header(props) {
+
 	let initSaved = false;
-	const [saved, setSaved] = useState(initSaved);
 	if (props.title == "Detail") {
 		const { route, userData } = props;
 		const itemId = route.params.itemId;
-		if (userData) {
-			setSaved(userData.savedItems.includes(itemId));
-		}
+		initSaved = userData.savedItems.includes(itemId);
 	}
+
+	const [saved, setSaved] = useState(initSaved);
 
 	const ChatButton = ({ isWhite, style, navigation }) => (
 		<TouchableOpacity

@@ -40,38 +40,6 @@ const Landing = (props) => {
 							Get Started
 						</Button>
 					</Block>
-					{/* Temperary Buttons for Development, delete afterwards */}
-					{/* <Text>The following buttons are for development only</Text>
-					<Block center>
-						<Button
-							style={styles.button}
-							color={Theme.COLORS.SECONDARY}
-							onPress={() => navigation.navigate("Elements")}
-							textStyle={{ color: Theme.COLORS.WHITE}}
-						>
-							Elements Page
-						</Button>
-					</Block>
-					<Block center>
-						<Button
-							style={styles.button}
-							color={Theme.COLORS.SECONDARY}
-							onPress={() => navigation.navigate("Articles")}
-							textStyle={{ color: Theme.COLORS.WHITE}}
-						>
-							Articles Page
-						</Button>
-					</Block>
-					<Block center>
-						<Button
-							style={styles.button}
-							color={Theme.COLORS.SECONDARY}
-							onPress={() => navigation.navigate("Profile")}
-							textStyle={{ color: Theme.COLORS.WHITE}}
-						>
-							Profile Page
-						</Button>
-					</Block> */}
 				</Block>
 			</Block>
 		</Block>

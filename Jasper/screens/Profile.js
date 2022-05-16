@@ -776,8 +776,8 @@ function Profile({ route, navigation }) {
 									}}
 								>
 									<Button
-										onPress={() => {
-											logout();
+										onPress={async() => {
+											await logout();
 											navigation.navigate("Login");
 										}}
 									>
