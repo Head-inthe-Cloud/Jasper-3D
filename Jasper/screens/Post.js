@@ -29,13 +29,23 @@ import {
 	ref as dbRef,
 	getDatabase,
 	push as firebasePush,
+	get as firebaseGet,
 	set as firebaseSet,
 	onValue,
 } from "firebase/database";
 
+import {
+	getDownloadURL,
+	getStorage,
+	ref as storageRef,
+	uploadBytes,
+	uploadString,
+} from "firebase/storage";
+
 // Libraries
 import * as ImagePicker from "expo-image-picker";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { async } from "@firebase/util";
 
 const { width } = Dimensions.get("screen");
 
@@ -75,20 +85,17 @@ function Post({ route, navigation }) {
 	};
 
 	const handleChooseImage = async () => {
-		// console.warn("Choosing Photo");
 		const options = {
 			maxWidth: 300,
 			maxHeight: 300,
 			mediaType: "photo",
 			base64: true,
-		};
-		const result = await ImagePicker.launchImageLibraryAsync({
 			mediaTypes: ImagePicker.MediaTypeOptions.Images,
 			allowsEditing: true,
 			aspect: [4, 3],
 			quality: 1,
-			base64: true,
-		});
+		};
+		const result = await ImagePicker.launchImageLibraryAsync(options);
 
 		setMediaData(
 			mediaData.concat([
@@ -101,7 +108,7 @@ function Post({ route, navigation }) {
 	};
 
 	const handleDeletePhoto = (idx) => {
-		let newMediaData = [... mediaData].filter((element, i) => i !== idx);
+		let newMediaData = [...mediaData].filter((element, i) => i !== idx);
 		setMediaData(newMediaData);
 	};
 
@@ -124,7 +131,7 @@ function Post({ route, navigation }) {
 				category: category,
 				title: title,
 				description: description,
-				images: mediaData.map((data) => data.data),
+				images: mediaData[0].data,
 				price: price,
 				pickUpLocation: location,
 				dropOff: dropOffSwitch,
@@ -138,32 +145,43 @@ function Post({ route, navigation }) {
 
 			// The following code attempts to store data at firebase storage
 			// ****************************************************
-			// const storage = getStorage();
-			// const remoteUrls = await Promise.all(
-			// 	mediaData.map(async (data) => {
-			// 		const imgPath =
-			// 			"itemImages/" +
-			// 			itemId +
-			// 			"/" +
-			// 			data.uri.substring(data.uri.lastIndexOf("/") + 1, data.uri.lastIndexOf('.jp')) + '.B64';
-			// 		const itemImageRef = storageRef(storage, imgPath);
-			// 		await uploadBytes(itemImageRef, data.data).catch(error => {console.warn(error)});
-			// 		let remoteUrl = await getDownloadURL(itemImageRef).catch(error => {console.warn(error)});
-			// 		return remoteUrl;
-			// 	})
-			// ).catch(error => {
-			// 	console.warn(error)
-			// });
+			const storage = getStorage();
+			const remoteUrls = await Promise.all(
+				mediaData.map(async (data) => {
+					const uriSplit = data.uri.split("/");
+					const imgName = uriSplit[uriSplit.length - 1];
+					const itemImgRef = storageRef(
+						storage,
+						"itemImages/" + itemId + "/" + imgName
+					);
+					const response = await fetch(data.uri);
+					const blob = await response.blob();
+					await uploadBytes(itemImgRef, blob).catch((error) => {
+						console.warn(error);
+					});
+					const remoteUrl = await getDownloadURL(itemImgRef);
+					return remoteUrl;
+				})
+			).catch((error) => {
+				console.warn(error);
+			});
 
 			// Update item info
-			// newItem.images = remoteUrls;
+			newItem.images = remoteUrls;
 			// ****************************************************
 			newItem.itemId = itemId;
 			const itemRef = dbRef(db, "allItems/" + itemId);
 			firebaseSet(itemRef, newItem);
 
-			const userRef = dbRef(db, 'users/' + userId);
-			const newPostedItems = 
+			const userRef = dbRef(db, "users/" + userId);
+			firebaseGet(userRef).then((snapshot) => {
+				if (snapshot.exists()) {
+					let newUserData = snapshot.val();
+					const newPostedItems = [...newUserData.postedItems, itemId];
+					newUserData.postedItems = newPostedItems;
+					firebaseSet(userRef, newUserData);
+				}
+			});
 
 			navigation.navigate("PostDone");
 			console.warn("Upload success");
@@ -292,10 +310,9 @@ function Post({ route, navigation }) {
 												bottom: 95,
 												width: 40,
 												height: 40,
-
 											}}
 											onPress={() => {
-												handleDeletePhoto(idx)
+												handleDeletePhoto(idx);
 											}}
 										/>
 									</Block>

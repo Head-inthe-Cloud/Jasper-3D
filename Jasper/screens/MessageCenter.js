@@ -11,7 +11,7 @@ import { Block, Text, theme } from "galio-framework";
 import { getDatabase, ref, onValue } from "firebase/database";
 
 import { Theme } from "../constants";
-const { width } = Dimensions.get("screen");
+const { height, width } = Dimensions.get("screen");
 
 const MessageCenter = ({ route, navigation }) => {
 	// const { allItems, conversations, userId } = route.params;
@@ -133,7 +133,15 @@ const MessageCenter = ({ route, navigation }) => {
 
 	return (
 		<Block flex center style={styles.home}>
-			<ScrollView
+			{conversationList.length === 0 && (
+				<Block flex center>
+					<Image source={require("../assets/imgs/chat.png")} style={{resizeMode: "cover", height: height / 2 +  theme.SIZES.BASE * 3, width: width, marginTop: 20 }}/>
+					<Text size={25} style={{textAlign: 'center'}}>
+						{"Seems Like you haven't\nstarted any conversation yet!"}
+					</Text>
+				</Block>
+			)}
+			{conversationList.length !== 0 &&<ScrollView
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={styles.articles}
 			>
@@ -148,7 +156,7 @@ const MessageCenter = ({ route, navigation }) => {
 						})}
 					</Block>
 				</Block>
-			</ScrollView>
+			</ScrollView>}
 		</Block>
 	);
 };

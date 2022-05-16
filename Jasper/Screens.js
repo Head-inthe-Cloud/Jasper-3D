@@ -39,7 +39,6 @@ import SupportDone from "./screens/SupportDone";
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-
 const CustomTabBarButton = ({ children, onPress }) => (
 	<TouchableOpacity
 		style={[styles.customButton, styles.shadow]}
@@ -269,6 +268,7 @@ function HomeStack({ route }) {
 				initialParams={{
 					allItems: allItems,
 					conversationsOverview: conversationsOverview,
+					users: users,
 					userId: userId,
 				}}
 				options={{
@@ -294,6 +294,7 @@ function LandingStack({ navigation }) {
 	const [allItems, setAllItems] = useState({});
 	const [users, setUsers] = useState({});
 	const [conversations, setConversations] = useState({});
+	let loading = true;
 
 	onAuthStateChanged(auth, (user) => {
 		if (user) {
@@ -338,12 +339,12 @@ function LandingStack({ navigation }) {
 			conversationsOffFunction();
 			usersOffFunction();
 		}
-
+	
 		return cleanUp;
 	}, []);
 
-	if(!allItems || !users || !conversations){
-		return <Loading />;
+	if(users && userId && allItems && conversations){
+		loading = false;
 	}
 
 	return (
@@ -353,46 +354,55 @@ function LandingStack({ navigation }) {
 				headerShown: false,
 			}}
 		>
-			<Stack.Screen
-				name="Landing"
-				component={Landing}
-				options={{
-					headerTransparent: true,
-				}}
-			/>
-			<Stack.Screen name="Login" component={Login} />
-			<Stack.Screen
-				name="SignUp"
-				component={SignUp}
-				options={{
-					header: ({ navigation, scene }) => (
-						<Header
-							title="Sign up"
-							back
-							navigation={navigation}
-							scene={scene}
-						/>
-					),
-					headerShown: true,
-				}}
-			/>
-			<Stack.Screen
-				name="Recovery"
-				component={Recovery}
-				options={{
-					header: ({ navigation, scene }) => (
-						<Header
-							title="Account Recovery"
-							back
-							navigation={navigation}
-							scene={scene}
-						/>
-					),
-					headerShown: true,
-				}}
-			/>
-
-			<Stack.Screen
+			{!userId && (
+				<Stack.Screen
+					name="Landing"
+					component={Landing}
+					options={{
+						headerTransparent: true,
+					}}
+				/>
+			)}
+			{!userId && <Stack.Screen name="Login" component={Login} />}
+			{!userId && (
+				<Stack.Screen
+					name="SignUp"
+					component={SignUp}
+					options={{
+						header: ({ navigation, scene }) => (
+							<Header
+								title="Sign up"
+								back
+								navigation={navigation}
+								scene={scene}
+							/>
+						),
+						headerShown: true,
+					}}
+				/>
+			)}
+			{!userId && (
+				<Stack.Screen
+					name="Recovery"
+					component={Recovery}
+					options={{
+						header: ({ navigation, scene }) => (
+							<Header
+								title="Account Recovery"
+								back
+								navigation={navigation}
+								scene={scene}
+							/>
+						),
+						headerShown: true,
+					}}
+				/>
+			)}
+			{loading && <Stack.Screen
+				name="Loading"
+				component={Loading}
+			/>}
+			{!loading && <Stack.Screen
 				name="App"
 				component={AppTabs}
 				initialParams={{
@@ -401,8 +411,8 @@ function LandingStack({ navigation }) {
 					users: users,
 					userId: userId,
 				}}
-			/>
-			<Stack.Screen
+			/>}
+			{!loading &&<Stack.Screen
 				name="Support"
 				component={Support}
 				initialParams={{
@@ -419,8 +429,8 @@ function LandingStack({ navigation }) {
 					),
 					headerShown: true,
 				}}
-			/>
-			<Stack.Screen
+			/>}
+			{!loading &&<Stack.Screen
 				name="SupportDone"
 				component={SupportDone}
 				options={{
@@ -434,13 +444,12 @@ function LandingStack({ navigation }) {
 					),
 					headerShown: true,
 				}}
-			/>
-			<Stack.Screen
+			/>}
+			{!loading && <Stack.Screen
 				name="Chat"
 				component={Chat}
 				initialParams={{
 					allItems: allItems,
-
 					conversations: conversations,
 					users: users,
 					userId: userId,
@@ -457,8 +466,8 @@ function LandingStack({ navigation }) {
 					headerShown: true,
 					cardStyle: { backgroundColor: "#F8F9FE" },
 				}}
-			/>
-			<Stack.Screen
+			/>}
+			{!loading && <Stack.Screen
 				name="Detail-Chat"
 				component={Detail}
 				initialParams={{
@@ -479,7 +488,7 @@ function LandingStack({ navigation }) {
 					),
 					headerShown: true,
 				}}
-			/>
+			/>}
 		</Stack.Navigator>
 	);
 }

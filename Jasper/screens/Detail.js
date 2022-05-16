@@ -107,8 +107,6 @@ function Detail({ route, navigation }) {
 		);
 	};
 
-
-
 	const item = allItems[itemId];
 
 	if (item) {
