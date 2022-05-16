@@ -14,6 +14,7 @@ import {
 	set as firebaseSet,
 	onValue,
 } from "firebase/database";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { logout } from "../firebase";
 
 import { Button, Card, Icon } from "../components";
@@ -39,6 +40,7 @@ function Profile({ route, navigation }) {
 	const [displayedPaymentOption, setDisplayedPaymentOption] = useState([]);
 
 	const inputBoxRef = useRef(null);
+
 
 	useEffect(() => {
 		const db = getDatabase();
@@ -68,6 +70,7 @@ function Profile({ route, navigation }) {
 	}
 
 	const db = getDatabase();
+	const storage = getStorage();
 	const userDataRef = dbRef(db, "users/" + userId);
 
 	const handleEditInfo = (field) => {
@@ -94,6 +97,11 @@ function Profile({ route, navigation }) {
 		const newUserData = { ...userData };
 		newUserData.paymentOptions[paymentOption] = null;
 		firebaseSet(userDataRef, newUserData);
+		const imgPath = "userData/" + userId + "/" + "paymentOptions/" + paymentOption + '.jpg';
+		const imgRef = storageRef(storage, imgPath);
+		deleteObject(imgRef);
+		
+
 	};
 
 	const handleChoosePhoto = async (imageField) => {
@@ -105,24 +113,32 @@ function Profile({ route, navigation }) {
 			base64: true,
 		};
 		const result = await ImagePicker.launchImageLibraryAsync(options);
+		const uriSplit = result.uri.split("/");
+		const imgName = uriSplit[uriSplit.length - 1];
+		let imgPath = "userData/" + userId + "/" + imageField + '.jpg';
+		const imgRef = storageRef(storage, imgPath);
+		const response = await fetch(result.uri);
+		const blob = await response.blob();
+		await uploadBytes(imgRef, blob).catch((error) => {
+			console.warn(error.message);
+		});
+		const remoteUrl = await getDownloadURL(imgRef);
 		let newUserData = { ...userData };
 
-		if (result.base64) {
-			if (imageField.includes("/")) {
-				const fields = imageField.split("/");
-				if (newUserData[fields[0]]) {
-					newUserData[fields[0]][fields[1]] =
-						"data:image/jpeg;base64," + result.base64;
-				} else {
-					newUserData[fields[0]] = {};
-					newUserData[fields[0]][fields[1]] =
-						"data:image/jpeg;base64," + result.base64;
-				}
+		if (imageField.includes("/")) {
+			const fields = imageField.split("/");
+			if (newUserData[fields[0]]) {
+				newUserData[fields[0]][fields[1]] =
+					remoteUrl;
 			} else {
-				newUserData[imageField] = "data:image/jpeg;base64," + result.base64;
+				newUserData[fields[0]] = {};
+				newUserData[fields[0]][fields[1]] =
+					remoteUrl;
 			}
-			firebaseSet(userDataRef, newUserData);
+		} else {
+			newUserData[imageField] = remoteUrl;
 		}
+		firebaseSet(userDataRef, newUserData);
 	};
 
 	const renderLocation = () => {
@@ -154,7 +170,11 @@ function Profile({ route, navigation }) {
 			userData.postedItems.length === 1 &&
 			userData.postedItems[0] === "default"
 		) {
-			return <Text style={{marginVertical: 10}} size={15}>Seems like you haven't posted any item yet</Text>;
+			return (
+				<Text style={{ marginVertical: 10 }} size={15}>
+					Seems like you haven't posted any item yet
+				</Text>
+			);
 		} else {
 			return userData.postedItems
 				.filter((id) => id !== "default")
@@ -177,7 +197,11 @@ function Profile({ route, navigation }) {
 			userData.savedItems.length === 1 &&
 			userData.savedItems[0] === "default"
 		) {
-			return <Text style={{marginVertical: 10, marginLeft: 7}} size={15}>Seems like you haven't saved any item yet </Text>;
+			return (
+				<Text style={{ marginVertical: 10, marginLeft: 7 }} size={15}>
+					Seems like you haven't saved any item yet{" "}
+				</Text>
+			);
 		} else {
 			return userData.savedItems
 				.filter((id) => id !== "default")
@@ -277,7 +301,7 @@ function Profile({ route, navigation }) {
 			) {
 				const paymentData = userData.paymentOptions[paymentOption];
 				let dataType;
-				if (paymentData.includes("data:image/jpeg;base64")) {
+				if (paymentData.includes("firebasestorage")) {
 					dataType = "image";
 				} else {
 					dataType = "text";

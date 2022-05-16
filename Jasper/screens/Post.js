@@ -31,7 +31,6 @@ import {
 	push as firebasePush,
 	get as firebaseGet,
 	set as firebaseSet,
-	onValue,
 } from "firebase/database";
 
 import {
@@ -39,7 +38,6 @@ import {
 	getStorage,
 	ref as storageRef,
 	uploadBytes,
-	uploadString,
 } from "firebase/storage";
 
 // Libraries

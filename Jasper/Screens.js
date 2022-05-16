@@ -290,10 +290,10 @@ function HomeStack({ route }) {
 
 function LandingStack({ navigation }) {
 	// Database
-	const [userId, setUserId] = useState("");
-	const [allItems, setAllItems] = useState({});
-	const [users, setUsers] = useState({});
-	const [conversations, setConversations] = useState({});
+	const [userId, setUserId] = useState();
+	const [allItems, setAllItems] = useState();
+	const [users, setUsers] = useState();
+	const [conversations, setConversations] = useState();
 	let loading = true;
 
 	onAuthStateChanged(auth, (user) => {
