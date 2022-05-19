@@ -40,6 +40,19 @@ const PostDone = ({ navigation }) => {
 			>
 				Back to Home
 			</Button>
+			<Button
+				onPress={() => navigation.goBack()}
+				style={{
+					width: width - theme.SIZES.BASE * 4,
+					marginTop: 20,
+					justifyContent: "center",
+					alignItems: "center",
+					borderRadius: 30,
+				}}
+				textStyle={{ fontSize: 15, fontWeight: "600" }}
+			>
+				Make Another Post
+			</Button>
 		</Block>
 	);
 };

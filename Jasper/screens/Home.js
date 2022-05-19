@@ -1,4 +1,4 @@
-import {useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import {
 	StyleSheet,
 	Dimensions,
@@ -19,10 +19,12 @@ const { width } = Dimensions.get("screen");
 
 const Home = ({ route, navigation }) => {
 	const [allItems, setAllItems] = useState({});
+	const [category, setCategory] = useState("All");
+	const [searchText, setSearchText] = useState("");
 
 	useEffect(() => {
 		const db = getDatabase();
-		const allItemsRef = dbRef(db, "allItems");
+		const allItemsRef = dbRef(db, "allItems/");
 
 		const allItemsOffFunction = onValue(allItemsRef, (snapshot) => {
 			const newAllItems = snapshot.val();
@@ -37,42 +39,39 @@ const Home = ({ route, navigation }) => {
 	}, []);
 
 	// Need to add search functionality
-
-	const items = allItems;
-
+	const allItemList = Object.keys(allItems).map((key) => allItems[key]);
+	let items = allItemList;
+	if (category !== "All") {
+		items = allItemList.filter((item) => item.category === category);
+	}
+	items = items.filter(
+		(item) =>
+			item.title.toLowerCase().includes(searchText.toLowerCase()) ||
+			item.description.toLowerCase().includes(searchText.toLowerCase())
+	);
 
 	// sort items by date
-	let datePairs;
-	if(items){
-		datePairs = Object.keys(items).map((key) => [
-			key,
-			items[key].createDate,
-		]);
-		datePairs.sort((first, second) => {
-			return second[1] - first[1];
-		});
-	}else{
-		datePairs=[];
-	}
-	const sortedItemKeys = datePairs.map((pair) => pair[0]);
+	items = items.sort((first, second) => {
+		return second.createDate - first.createDate;
+	});
 
 	const renderItems = () => {
 		let result = [];
-		for (let i = 0; i < Math.ceil(sortedItemKeys.length / 2); i++) {
+		for (let i = 0; i < Math.ceil(items.length / 2); i++) {
 			const card1 = () => {
 				return (
 					<Card
-						item={items[sortedItemKeys[i * 2]]}
+						item={items[i * 2]}
 						style={{ marginRight: theme.SIZES.BASE }}
 					/>
 				);
 			};
 
 			const card2 = () => {
-				if (i * 2 + 1 >= sortedItemKeys.length) {
+				if (i * 2 + 1 >= items.length) {
 					return null;
 				} else {
-					return <Card item={items[sortedItemKeys[i * 2 + 1]]} />;
+					return <Card item={items[i * 2 + 1]} />;
 				}
 			};
 
@@ -101,9 +100,7 @@ const Home = ({ route, navigation }) => {
 								space="between"
 								style={{ paddingTop: 7, right: 10 }}
 							>
-								<Text h4 >
-									Latest Posts
-								</Text>
+								<Text h4>Latest Posts</Text>
 							</Block>
 						</Block>
 					</Block>

@@ -202,32 +202,7 @@ function PostStack({ route, navigation }) {
 }
 
 function HomeStack({ route }) {
-	const [searchText, setSearchText] = useState("");
-	const [selectedCategory, setSelectedCategory] = useState("All");
-
 	const { allItems, conversations, users, userId } = route.params;
-
-	let filteredItems;
-	if (allItems) {
-		filteredItems = Object.keys(allItems).map((key) => allItems[key]);
-	} else {
-		filteredItems = [];
-	}
-
-	// handle category select
-	if (selectedCategory !== "All") {
-		filteredItems = filteredItems.filter((item) => {
-			return item.category === selectedCategory;
-		});
-	}
-
-	// handle search
-	filteredItems = filteredItems.filter((item) => {
-		return (
-			item.title.toLowerCase().includes(searchText.toLowerCase()) ||
-			item.description.toLowerCase().includes(searchText.toLowerCase())
-		);
-	});
 
 	// Conversation Overview
 	const conversationList = Object.keys(conversations).map(
@@ -248,7 +223,7 @@ function HomeStack({ route }) {
 			<Stack.Screen
 				name="Home"
 				component={Home}
-				initialParams={{ items: allItems }}
+				initialParams={{ allItems: allItems }}
 				options={{
 					header: ({ navigation, scene }) => (
 						<Header

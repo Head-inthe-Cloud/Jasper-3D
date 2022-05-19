@@ -1,3 +1,4 @@
+import { useState, useEffect, useSyncExternalStore } from "react";
 //galio
 import { Block, Text, theme } from "galio-framework";
 import {
@@ -20,7 +21,15 @@ import {
 	getDatabase,
 	ref as dbRef,
 	set as firebaseSet,
+	get as firebaseGet,
 	push as firebasePush,
+	orderByChild,
+	onValue,
+	query,
+	equalTo,
+	Database,
+	child,
+	limitToFirst,
 } from "firebase/database";
 
 // Libraries
@@ -37,39 +46,94 @@ const thumbMeasure = (width - 48 - 32) / 3;
 const cardWidth = width - theme.SIZES.BASE * 2;
 
 function Detail({ route, navigation }) {
-	const { allItems, conversationsOverview, itemId, users, userId } =
-		route.params;
+	const { conversationsOverview, itemId, users, userId } = route.params;
+	// const [allItems, setAllItems] = useState();
 
-	const item = allItems[itemId];
+	// useEffect(() => {
+	// 	const db = getDatabase();
+	// 	const allItemsRef = dbRef(db, "allItems/");
+
+	// 	const allItemsOffFunction = onValue(allItemsRef, (snapshot) => {
+	// 		const newAllItems = snapshot.val();
+	// 		setAllItems(newAllItems);
+	// 	});
+
+	// 	function cleanUp() {
+	// 		allItemsOffFunction();
+	// 	}
+
+	// 	return cleanUp;
+	// }, []);
+
+	// if (!allItems) {
+	// 	return <Loading />;
+	// }
+	// const item = allItems[itemId];
+
+	// ********************************
+	const [item, setItem] = useState();
+	const [otherItems, setOtherItems] = useState([]);
+	const db = getDatabase();
+
+	useEffect(() => {
+		const fetchData = async () => {
+			const itemRef = dbRef(db, "allItems/" + itemId);
+			let sellerId;
+			await firebaseGet(itemRef).then((snapshot) => {
+				setItem(snapshot.val());
+				sellerId = snapshot.val().sellerId;
+			});
+
+			const otherItemRef = query(
+				dbRef(db, "allItems"),
+				orderByChild("sellerId"),
+				equalTo(sellerId),
+				limitToFirst(10)
+			);
+			onValue(otherItemRef, (snapshot) => {
+				setOtherItems(
+					Object.keys(snapshot.val()).filter(key => key != itemId).map(
+						(key) => snapshot.val()[key]
+					)
+				);
+			});
+		};
+		fetchData();
+	}, []);
+
+	// ******************************
+
+	if (!item) {
+		return <Loading />;
+	}
 	const sellerData = users[item.sellerId];
-	const otherItems = sellerData.postedItems
-		.filter((key) => key !== itemId && key !== "default")
-		.map((key) => allItems[key]);
 
-	const handleDeleteItem = async (itemId) => {
-		const db = getDatabase();
+	const handleDeleteItem = async () => {
 		const itemRef = dbRef(db, "allItems/" + itemId);
-		firebaseSet(itemRef, null);
 
 		const userRef = dbRef(db, "users/" + userId);
 		let newUserData = { ...sellerData };
-		const newPostedItems = newUserData.filter((id) => id !== itemId);
+		const newPostedItems = newUserData.postedItems.filter(
+			(id) => id !== itemId
+		);
 		newUserData.postedItems = newPostedItems;
-		firebaseSet(userRef, newUserData);
 
 		const storage = getStorage();
 		const imgsRef = storageRef(storage, "itemImages/" + itemId);
+
+		firebaseSet(userRef, newUserData);
 		listAll(imgsRef).then((result) => {
 			result.items.forEach((imgRef) => {
 				deleteObject(imgRef);
 			});
 		});
+		firebaseSet(itemRef, {});
 
 		navigation.goBack();
 		alert("Item Deleted");
 	};
 
-	const renderImageCarousel = (item) => {
+	const renderImageCarousel = () => {
 		const renderImages = () => {
 			return item.images.map((imgUri) => (
 				<TouchableWithoutFeedback
@@ -99,12 +163,12 @@ function Detail({ route, navigation }) {
 					paddingHorizontal: theme.SIZES.BASE / 2,
 				}}
 			>
-				{allItems && renderImages()}
+				{item && renderImages()}
 			</ScrollView>
 		);
 	};
 
-	const renderCards = (otherItems) => {
+	const renderCards = () => {
 		return otherItems.map((otherItem) => (
 			<Card
 				item={otherItem}
@@ -228,7 +292,7 @@ function Detail({ route, navigation }) {
 								</Block>
 							</Block>
 						</Block>
-						{renderImageCarousel(item)}
+						{renderImageCarousel()}
 						<Block style={styles.descriptionBox}>
 							<Text
 								size={18}
@@ -331,7 +395,7 @@ function Detail({ route, navigation }) {
 									style={styles.button}
 									textStyle={{ fontSize: 20 }}
 									color={Theme.COLORS.ERROR}
-									onPress={() => handleDeleteItem(itemId)}
+									onPress={() => handleDeleteItem()}
 								>
 									Delete This Post
 								</Button>
@@ -364,7 +428,7 @@ function Detail({ route, navigation }) {
 								marginBottom: theme.SIZES.BASE * 2,
 							}}
 						>
-							{otherItems && renderCards(otherItems)}
+							{otherItems && renderCards()}
 						</ScrollView>
 					</Block>
 				</Block>
