@@ -11,6 +11,9 @@ import {
 	ref as dbRef,
 	onValue,
 	set as firebaseSet,
+	query,
+	limitToLast,
+	orderByChild,
 } from "firebase/database";
 import { Card, Icon } from "../components";
 const { width } = Dimensions.get("screen");
@@ -21,10 +24,12 @@ const Home = ({ route, navigation }) => {
 	const [allItems, setAllItems] = useState({});
 	const [category, setCategory] = useState("All");
 	const [searchText, setSearchText] = useState("");
+	const [page, setPage] = useState(1);
 
 	useEffect(() => {
 		const db = getDatabase();
-		const allItemsRef = dbRef(db, "allItems/");
+		// const allItemsRef = dbRef(db, "allItems/");
+		const allItemsRef = query(dbRef(db, "allItems"), orderByChild("createDate"), limitToLast(page * 6));
 
 		const allItemsOffFunction = onValue(allItemsRef, (snapshot) => {
 			const newAllItems = snapshot.val();
@@ -36,7 +41,7 @@ const Home = ({ route, navigation }) => {
 		}
 
 		return cleanUp;
-	}, []);
+	}, [page]);
 
 	// Need to add search functionality
 	const allItemList = Object.keys(allItems).map((key) => allItems[key]);
@@ -85,11 +90,25 @@ const Home = ({ route, navigation }) => {
 		return result;
 	};
 
+	const isCloseToBottom = (event) => {
+		const paddingToBottom = 20;
+		return (
+			event.layoutMeasurement.height + event.contentOffset.y >=
+			event.contentSize.height - paddingToBottom
+		);
+	};
+
 	return (
 		<Block flex center style={styles.home}>
 			<ScrollView
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={styles.articles}
+				onScroll={(event) => {
+					// Load more items as you get to the bottom
+					if (isCloseToBottom(event.nativeEvent)) {
+						setPage(page + 1);
+					}
+				}}
 			>
 				<Block flex>
 					<Block style={{ paddingHorizontal: theme.SIZES.BASE }}>
