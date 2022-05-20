@@ -1,4 +1,6 @@
-import React from "react";
+import { useState, useEffect } from "react";
+import { onAuthStateChanged } from "@firebase/auth";
+import { auth } from "../firebase";
 import {
 	ImageBackground,
 	Image,
@@ -13,8 +15,7 @@ const { height, width } = Dimensions.get("screen");
 import Theme from "../constants/Theme";
 import Images from "../constants/Images";
 
-const Landing = ({route, navigation}) => {
-	
+const Landing = ({ route, navigation}) => {
 	return (
 		<Block flex style={styles.container}>
 			<StatusBar hidden />

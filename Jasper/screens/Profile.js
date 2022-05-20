@@ -118,12 +118,10 @@ function Profile({ route, navigation }) {
 			mediaTypes: ImagePicker.MediaTypeOptions.Images,
 			allowsEditing: true,
 			aspect: [4, 3],
-			quality: 1,
+			quality: 0,
 			base64: true,
 		};
 		const result = await ImagePicker.launchImageLibraryAsync(options);
-		const uriSplit = result.uri.split("/");
-		const imgName = uriSplit[uriSplit.length - 1];
 		let imgPath = "userData/" + userId + "/" + imageField + ".jpg";
 		const imgRef = storageRef(storage, imgPath);
 		const response = await fetch(result.uri);
@@ -840,11 +838,12 @@ function Profile({ route, navigation }) {
 													fontSize: 15,
 													fontWeight: "600",
 												}}
-												onPress={() => {
+												onPress={async () => {
 													logout();
 													navigation.navigate(
 														"Login"
 													);
+													alert("You have Logged out")
 												}}
 											>
 												Log Out

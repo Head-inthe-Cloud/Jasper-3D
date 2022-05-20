@@ -325,16 +325,16 @@ function LandingStack({ navigation }) {
 				headerShown: false,
 			}}
 		>
-			{!userId && (
-				<Stack.Screen
-					name="Landing"
-					component={Landing}
-					options={{
-						headerTransparent: true,
-					}}
-				/>
-			)}
-			{!userId && <Stack.Screen name="Login" component={Login} />}
+			{!userId && <Stack.Screen
+				name="Landing"
+				component={Landing}
+				loading={loading}
+				options={{
+					headerTransparent: true,
+				}}
+			/>}
+
+			<Stack.Screen name="Login" component={Login} />
 			{!userId && (
 				<Stack.Screen
 					name="SignUp"

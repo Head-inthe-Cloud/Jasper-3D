@@ -330,7 +330,7 @@ function Detail({ route, navigation }) {
 							</Block>
 							<Block
 								flex
-								style={{ marginLeft: 20, marginBottom: 20 }}
+								style={{marginLeft: 3, marginBottom: 20 }}
 							>
 								<Text
 									size={14}

@@ -22,11 +22,12 @@ const Login = ({ navigation }) => {
 	const [userId, setUserId] = useState();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	
+	console.warn(userId);
 
 	onAuthStateChanged(auth, (user) => {
 		if (user) {
 			setUserId(user.uid);
-			console.warn(user.uid);
 			navigation.navigate("App");
 		} 
 	});

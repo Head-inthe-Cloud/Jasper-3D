@@ -162,7 +162,7 @@ const Chat = ({ route, navigation }) => {
 				mediaTypes: ImagePicker.MediaTypeOptions.Images,
 				allowsEditing: true,
 				aspect: [4, 3],
-				quality: 1,
+				quality: 0,
 				base64: true,
 			};
 			const result = await ImagePicker.launchImageLibraryAsync(options);

@@ -5,6 +5,7 @@
     "icon":"./assets/imgs/icon.png",
     "version": "1.0.0",
     "scheme": "uwjasper",
+    "orientation": "portrait",
     "ios": {
       "bundleIdentifier": "com.uwinfo.jasper",
       "buildNumber": "1.0.0"

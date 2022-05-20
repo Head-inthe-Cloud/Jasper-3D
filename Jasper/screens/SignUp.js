@@ -41,7 +41,7 @@ const SignUp = ({ navigation }) => {
 	const handleSignUp = () => {
 		if (checkCompletion()) {
 		registerWithEmailAndPassword(userName, email, password);
-		navigation.navigate("App");
+		navigation.navigate("Home");
 		}
 	};
 	return (
@@ -54,6 +54,7 @@ const SignUp = ({ navigation }) => {
 				<Text style={styles.textHeader}>Create an Account</Text>
 				<Block style={{ paddingHorizontal: theme.SIZES.BASE }}>
 					<Input
+						type="email-address"
 						placeholder="Email"
 						placeholderTextColor="#6314AB"
 						iconContent={
