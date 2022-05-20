@@ -462,7 +462,7 @@ const Chat = ({ route, navigation }) => {
 				return (
 					<Block flex style={[styles.rating, styles.shadow]}>
 						{!conversation.rated && (
-							<Block>
+							<Block flex style={styles.rating}>
 								<Text style={{ fontSize: 20 }}>
 									How would you rate your experience?
 								</Text>

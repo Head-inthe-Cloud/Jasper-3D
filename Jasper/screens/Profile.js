@@ -21,7 +21,7 @@ import {
 	getDownloadURL,
 	deleteObject,
 } from "firebase/storage";
-import { logout } from "../firebase";
+import { logout } from "../firebase.js";
 
 import { Button, Card, Icon } from "../components";
 import { Images, Theme } from "../constants";

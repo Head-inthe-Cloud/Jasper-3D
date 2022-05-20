@@ -45,6 +45,7 @@ const Login = ({ navigation }) => {
 		if(checkCompletion()){
 			logInWithEmailAndPassword(email, password);
 			setPassword("");
+			navigation.navigate("App");
 		}
 	};
 
