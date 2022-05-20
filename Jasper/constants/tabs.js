@@ -25,4 +25,10 @@ export default tabs = {
     {id:"University Book Store", title: "University Book Store"},
     {id:"Chat for details", title: "Chat for details"}
   ],
+  orderByChoices: [
+    {id:"latest", title:"Latest Posts"},
+    {id:"oldest", title:"Oldest Posts"},
+    {id:"price_high", title:"Price: High to Low"},
+    {id:"price_low", title:"Price: Low to High"},
+  ]
 }

@@ -15,7 +15,8 @@ import {
 	limitToLast,
 	orderByChild,
 } from "firebase/database";
-import { Card, Icon } from "../components";
+import { Button, Card } from "../components";
+import { tabs } from "../constants";
 const { width } = Dimensions.get("screen");
 
 // Database
@@ -24,6 +25,7 @@ const Home = ({ route, navigation }) => {
 	const [allItems, setAllItems] = useState({});
 	const [category, setCategory] = useState("All");
 	const [searchText, setSearchText] = useState("");
+	const [orderBy, setOrderBy] = useState(0);
 	const [page, setPage] = useState(1);
 	const { uw } = route.params;
 
@@ -78,18 +80,41 @@ const Home = ({ route, navigation }) => {
 	}
 
 	// Filter UW Visibility
-	if(!uw){
-		items = items.filter(
-			(item) => 
-				!item.UWvisibility
-			
-		)
+	if (!uw) {
+		items = items.filter((item) => !item.UWvisibility);
 	}
 
-	// sort items by date
-	items = items.sort((first, second) => {
-		return Date.parse(second.createDate) - Date.parse(first.createDate);
-	});
+	// sort items
+	switch (tabs.orderByChoices[orderBy].id) {
+		case "latest":
+			items = items.sort((first, second) => {
+				return (
+					Date.parse(second.createDate) - Date.parse(first.createDate)
+				);
+			});
+			break;
+		case "oldest":
+			items = items.sort((first, second) => {
+				return (
+					Date.parse(first.createDate) - Date.parse(second.createDate)
+				);
+			});
+			break;
+		case "price_high":
+			items = items.sort((first, second) => {
+				return parseFloat(second.price) - parseFloat(first.price);
+			});
+			break;
+		case "price_low":
+			items = items.sort((first, second) => {
+				return parseFloat(first.price) - parseFloat(second.price);
+			});
+			break;
+	}
+
+	const toggleChangeOrder = () => {
+		setOrderBy((orderBy + 1) % tabs.orderByChoices.length);
+	};
 
 	const renderItems = () => {
 		let result = [];
@@ -150,7 +175,22 @@ const Home = ({ route, navigation }) => {
 								space="between"
 								style={{ paddingTop: 7, right: 10 }}
 							>
-								<Text h4>Latest Posts</Text>
+								<Text h4>
+									{tabs.orderByChoices[orderBy].title}
+								</Text>
+								<Button
+									onlyIcon
+									icon="filter"
+									iconFamily="AntDesign"
+									iconSize={30}
+									iconColor={theme.COLORS.BLACK}
+									color={"transparent"}
+									style={{
+										width: 30,
+										height: 30,
+									}}
+									onPress={() => toggleChangeOrder()}
+								/>
 							</Block>
 						</Block>
 					</Block>
