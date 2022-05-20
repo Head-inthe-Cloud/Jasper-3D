@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dimensions, Text, ScrollView } from "react-native";
 import { Block, theme } from "galio-framework";
 import {
@@ -22,15 +22,15 @@ const Login = ({ navigation }) => {
 	const [userId, setUserId] = useState();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	
-	console.warn(userId);
 
-	onAuthStateChanged(auth, (user) => {
-		if (user) {
-			setUserId(user.uid);
-			navigation.navigate("App");
-		} 
-	});
+	useEffect(() => {
+		onAuthStateChanged(auth, (user) => {
+			if (user) {
+				setUserId(user.uid);
+				navigation.navigate("App");
+			} 
+		});
+	}, [])
 
 	const checkCompletion = () => {
 		if(!email || !password){

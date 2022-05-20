@@ -277,19 +277,15 @@ function Profile({ route, navigation }) {
 		let paymentOptions = ["PayPal", "Venmo", "WeChat", "Zelle"];
 		let existingPaymentOptions = [];
 		if (userData.paymentOptions) {
-			existingPaymentOptions = Object.keys(userData.paymentOptions);
-			if (
-				!(
-					existingPaymentOptions.length === 1 &&
-					existingPaymentOptions[0] === "default"
+			existingPaymentOptions = Object.keys(
+				userData.paymentOptions
+			).filter((key) => key !== "default");
+
+			paymentOptions = existingPaymentOptions.concat(
+				paymentOptions.filter(
+					(option) => !existingPaymentOptions.includes(option)
 				)
-			) {
-				paymentOptions = existingPaymentOptions.concat(
-					paymentOptions.filter(
-						(option) => !existingPaymentOptions.includes(option)
-					)
-				);
-			}
+			);
 		}
 
 		const toggleDisplayPaymentOption = (paymentOption) => {
@@ -843,7 +839,9 @@ function Profile({ route, navigation }) {
 													navigation.navigate(
 														"Login"
 													);
-													alert("You have Logged out")
+													alert(
+														"You have Logged out"
+													);
 												}}
 											>
 												Log Out
