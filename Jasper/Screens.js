@@ -208,10 +208,6 @@ function HomeStack({ route }) {
 	const conversationList = Object.keys(conversations).map(
 		(key) => conversations[key]
 	);
-	const conversationsOverview = conversationList.map((conversation) => [
-		conversation.conversationId,
-		conversation.participants,
-	]);
 
 	return (
 		<Stack.Navigator
@@ -242,7 +238,7 @@ function HomeStack({ route }) {
 				component={Detail}
 				initialParams={{
 					allItems: allItems,
-					conversationsOverview: conversationsOverview,
+					conversationList: conversationList,
 					users: users,
 					userId: userId,
 				}}

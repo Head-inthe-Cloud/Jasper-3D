@@ -46,7 +46,7 @@ const thumbMeasure = (width - 48 - 32) / 3;
 const cardWidth = width - theme.SIZES.BASE * 2;
 
 function Detail({ route, navigation }) {
-	const { conversationsOverview, itemId, users, userId } = route.params;
+	const { conversationList, itemId, users, userId } = route.params;
 	// const [allItems, setAllItems] = useState();
 
 	// useEffect(() => {
@@ -187,11 +187,12 @@ function Detail({ route, navigation }) {
 	};
 
 	const handleConversationStarter = async () => {
-		for (let i = 0; i < conversationsOverview.length; i++) {
+		for (let i = 0; i < conversationList.length; i++) {
 			// If the conversation already exists, navigate to that conversation
 			if (
-				conversationsOverview[i][1].includes(userId) &&
-				conversationsOverview[i][1].includes(sellerData.userId)
+				conversationList[i].participants.includes(userId) &&
+				conversationList[i].participants.includes(sellerData.userId) &&
+				conversationList[i].itemId === itemId
 			) {
 				navigation.navigate("Chat", {
 					conversationId: conversationsOverview[i][0],

@@ -205,7 +205,7 @@ function Header(props) {
 			<Tabs
 				data={tabs || []}
 				initialIndex={tabIndex || defaultTab}
-				onChange={(id) => navigation.setParams({ tabId: id })}
+				onChange={(id) =>  navigation.navigate({name:'Home', params: {category: id}, merge: true})}
 			/>
 		);
 	};

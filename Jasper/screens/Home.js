@@ -54,13 +54,20 @@ const Home = ({ route, navigation }) => {
 		}
 	}, [route.params.searchText]);
 
+	useEffect(() => {
+		if (route.params.category) {
+			setCategory(route.params.category);
+		}
+	}, [route.params.category]);
+
 	// Need to add search functionality
 	const allItemList = Object.keys(allItems).map((key) => allItems[key]);
 	let items = allItemList;
 	if (category !== "All") {
 		items = allItemList.filter((item) => item.category === category);
 	}
-	if (searchText.length > 0) {
+
+	if (searchText.length > 2) {
 		items = items.filter(
 			(item) =>
 				item.title.toLowerCase().includes(searchText.toLowerCase()) ||
