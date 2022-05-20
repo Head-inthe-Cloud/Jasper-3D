@@ -14,7 +14,6 @@ import { Theme } from "../constants";
 const { height, width } = Dimensions.get("screen");
 
 const MessageCenter = ({ route, navigation }) => {
-	// const { allItems, conversations, userId } = route.params;
 	const { allItems, users, userId } = route.params;
 
 	// Fetch data from database
@@ -40,7 +39,11 @@ const MessageCenter = ({ route, navigation }) => {
 
 	const conversationList = Object.keys(conversations)
 		.map((key) => conversations[key])
-		.filter((conversation) => conversation.participants.includes(userId));
+		.filter((conversation) => conversation.participants.includes(userId))
+		.sort(
+			(first, second) =>
+				Date.parse(second.createdAt) - Date.parse(first.createdAt)
+		);
 
 	const renderConversation = (conversation, navigation, userId) => {
 		const subjectId =
@@ -135,28 +138,40 @@ const MessageCenter = ({ route, navigation }) => {
 		<Block flex center style={styles.home}>
 			{conversationList.length === 0 && (
 				<Block flex center>
-					<Image source={require("../assets/imgs/chat.png")} style={{resizeMode: "cover", height: height / 2 +  theme.SIZES.BASE * 3, width: width, marginTop: 20 }}/>
-					<Text size={25} style={{textAlign: 'center'}}>
-						{"Seems Like you haven't\nstarted any conversation yet!"}
+					<Image
+						source={require("../assets/imgs/chat.png")}
+						style={{
+							resizeMode: "cover",
+							height: height / 2 + theme.SIZES.BASE * 3,
+							width: width,
+							marginTop: 20,
+						}}
+					/>
+					<Text size={25} style={{ textAlign: "center" }}>
+						{
+							"Seems Like you haven't\nstarted any conversation yet!"
+						}
 					</Text>
 				</Block>
 			)}
-			{conversationList.length !== 0 &&<ScrollView
-				showsVerticalScrollIndicator={false}
-				contentContainerStyle={styles.articles}
-			>
-				<Block flex>
-					<Block style={{ paddingHorizontal: theme.SIZES.BASE }}>
-						{conversationList.map((conversation) => {
-							return renderConversation(
-								conversation,
-								navigation,
-								userId
-							);
-						})}
+			{conversationList.length !== 0 && (
+				<ScrollView
+					showsVerticalScrollIndicator={false}
+					contentContainerStyle={styles.articles}
+				>
+					<Block flex>
+						<Block style={{ paddingHorizontal: theme.SIZES.BASE }}>
+							{conversationList.map((conversation) => {
+								return renderConversation(
+									conversation,
+									navigation,
+									userId
+								);
+							})}
+						</Block>
 					</Block>
-				</Block>
-			</ScrollView>}
+				</ScrollView>
+			)}
 		</Block>
 	);
 };
