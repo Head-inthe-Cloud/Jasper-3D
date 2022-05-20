@@ -68,7 +68,7 @@ const registerWithEmailAndPassword = async (userName, email, password) => {
             paymentOptions: {default: "default"},
             postedItems: ["default"],
             savedItems: ["default"],
-            rating: 5,
+            rating: [5],
             userId: userId,
             userName: userName,
             uw: email.includes("uw"),

@@ -39,8 +39,9 @@ const Chat = ({ route, navigation }) => {
 	const { allItems, conversationId, users, userId, subjectId } = route.params;
 
 	const [conversations, setConversations] = useState();
+	const db = getDatabase();
+
 	useEffect(() => {
-		const db = getDatabase();
 		const conversationsRef = dbRef(db, "conversations");
 
 		const conversationsOffFunction = onValue(
@@ -166,6 +167,24 @@ const Chat = ({ route, navigation }) => {
 				return;
 			}
 			handleSentMessage("image", result.uri);
+		};
+
+		const handleRatingSubmission = () => {
+			const subjectData = users[subjectId];
+			let newSubjectData = { ...subjectData };
+			let newRating = [...newSubjectData.rating, rating];
+			newSubjectData.rating = newRating;
+
+			const subjectRef = dbRef(db, "users/" + subjectId);
+			firebaseSet(subjectRef, newSubjectData);
+
+			let newConversation = { ...conversation };
+			newConversation.rated = true;
+			const conversationRef = dbRef(
+				db,
+				"conversations/" + conversationId
+			);
+			firebaseSet(conversationRef, newConversation);
 		};
 
 		const renderMessages = () => {
@@ -430,50 +449,54 @@ const Chat = ({ route, navigation }) => {
 			if (itemData) {
 				return (
 					<Block flex style={[styles.rating, styles.shadow]}>
-						<Text style={{ fontSize: 20 }}>
-							How would you rate your experience?
-						</Text>
-						<StarRating
-							rating={rating}
-							starSize={40}
-							starStyle={styles.stars}
-							fullStarColor={"#FDCC0D"}
-							selectedStar={(selectedRating) => {
-								setRating(selectedRating);
-							}}
-						/>
-						{rating != 0 && (
-							<Text
-								style={{
-									color: Theme.COLORS.GRAY,
-									fontSize: 20,
-								}}
-							>
-								Thank you for your feedback!
-							</Text>
-						)}
-						<Block style={{ marginVertical: 10 }}></Block>
-						<Block>
-							<Button
-								style={styles.button}
-								textStyle={{ fontSize: 20 }}
-								onPress={() => handleRatingSubmission()}
-							>
-								Submit
-							</Button>
-						</Block>
-						{userId === itemData.sellerId && (
-							<Button
-								style={styles.button}
-								textStyle={{ fontSize: 20 }}
-								color={Theme.COLORS.ERROR}
-								onPress={() => {
-									handleDeleteItem(itemId);
-									handleRatingSubmission();
-								}}
-							>
-								Submit and Delete this Post
-							</Button>
+						{!conversation.rated && (
+							<Block>
+								<Text style={{ fontSize: 20 }}>
+									How would you rate your experience?
+								</Text>
+								<StarRating
+									rating={rating}
+									starSize={40}
+									starStyle={styles.stars}
+									fullStarColor={"#FDCC0D"}
+									selectedStar={(selectedRating) => {
+										setRating(selectedRating);
+									}}
+								/>
+								{rating != 0 && (
+									<Text
+										style={{
+											color: Theme.COLORS.GRAY,
+											fontSize: 20,
+										}}
+									>
+										Thank you for your feedback!
+									</Text>
+								)}
+								<Block style={{ marginVertical: 10 }}></Block>
+								<Block>
+									<Button
+										style={styles.button}
+										textStyle={{ fontSize: 20 }}
+										onPress={() => handleRatingSubmission()}
+									>
+										Submit
+									</Button>
+								</Block>
+								{userId === itemData.sellerId && (
+									<Button
+										style={styles.button}
+										textStyle={{ fontSize: 20 }}
+										color={Theme.COLORS.ERROR}
+										onPress={() => {
+											handleDeleteItem(itemId);
+											handleRatingSubmission();
+										}}
+									>
+										Submit and Delete this Post
+									</Button>
+								)}
+							</Block>
 						)}
 						<Button
 							style={styles.button}

@@ -544,7 +544,7 @@ function Profile({ route, navigation }) {
 								>
 									<StarRating
 										disabled
-										rating={parseFloat(userData.rating)}
+										rating={parseFloat(userData.rating.reduce((a, b) => a+b)/userData.rating.length)}
 										starSize={25}
 										starStyle={styles.stars}
 										fullStarColor={"#FDCC0D"}

@@ -314,7 +314,7 @@ function Detail({ route, navigation }) {
 									</Text>
 									<StarRating
 										disabled
-										rating={sellerData.rating}
+										rating={sellerData.rating.reduce((a, b) => a+b)/sellerData.rating.length}
 										starSize={18}
 										starStyle={styles.stars}
 										fullStarColor={"#FDCC0D"}
