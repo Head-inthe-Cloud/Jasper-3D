@@ -41,7 +41,7 @@ const SignUp = ({ navigation }) => {
 	const handleSignUp = () => {
 		if (checkCompletion()) {
 		registerWithEmailAndPassword(userName, email, password);
-		navigation.navigate("Home");
+		navigation.navigate("App");
 		}
 	};
 	return (

@@ -510,6 +510,16 @@ const Chat = ({ route, navigation }) => {
 								)}
 							</Block>
 						)}
+						{conversation.rated && (
+									<Text
+										style={{
+											color: Theme.COLORS.GRAY,
+											fontSize: 20,
+										}}
+									>
+										Thank you for your feedback!
+									</Text>
+								)}
 						<Button
 							style={styles.button}
 							textStyle={{ fontSize: 20 }}
