@@ -102,7 +102,7 @@ const Chat = ({ route, navigation }) => {
 				db,
 				"conversations/" + conversationId
 			);
-			const newConversation = conversation;
+			let newConversation = { ...conversation };
 			let newMessages = newConversation.messages;
 			let today = new Date(Date.now());
 			let newMessage = {
@@ -147,6 +147,9 @@ const Chat = ({ route, navigation }) => {
 			}
 
 			newMessages.push(newMessage);
+			newConversation.messages = newMessages;
+			newConversation.updatedAt = today.toISOString();
+
 			firebaseSet(conversationRef, newConversation);
 			setTextInput("");
 		};
@@ -198,7 +201,16 @@ const Chat = ({ route, navigation }) => {
 				const uw = users[message.userId].uw;
 				const uw_horz_offset = speaker == SELF ? 48 : 38;
 				const avatar = (
-					<Block>
+					<TouchableOpacity
+						onPress={() => {
+							if(speaker === SUBJECT){
+								navigation.navigate("Profile-other", {
+									userId: subjectId,
+									otherUser: true,
+								});
+							}
+						}}
+					>
 						<Image
 							source={{ uri: avatarUri }}
 							resizeMode="cover"
@@ -222,7 +234,7 @@ const Chat = ({ route, navigation }) => {
 								resizeMode="cover"
 							/>
 						)}
-					</Block>
+					</TouchableOpacity>
 				);
 
 				const messageBubble = (speaker) => {

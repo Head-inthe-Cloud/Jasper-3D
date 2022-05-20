@@ -40,6 +40,7 @@ import {
 	ref as storageRef,
 	listAll,
 } from "firebase/storage";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 const { width } = Dimensions.get("screen");
 const thumbMeasure = (width - 48 - 32) / 3;
@@ -279,7 +280,7 @@ function Detail({ route, navigation }) {
 									{!item.negotiable && (
 										<Text
 											size={15}
-											style={{left: 5, top: 20}}
+											style={{ left: 5, top: 20 }}
 											color={Theme.COLORS.GRAY}
 										>
 											(Not Negotiable)
@@ -302,19 +303,25 @@ function Detail({ route, navigation }) {
 								row
 								style={{ top: 15, left: 10, marginBottom: 20 }}
 							>
-								<Image
-									source={{
-										uri: sellerData.avatar,
-									}}
-									style={styles.avatar}
-								/>
+								<TouchableOpacity onPress={()=>navigation.navigate("Profile-other", {userId: sellerData.userId, otherUser: true})}>
+									<Image
+										source={{
+											uri: sellerData.avatar,
+										}}
+										style={styles.avatar}
+									/>
+								</TouchableOpacity>
 								<Block>
 									<Text size={14} style={styles.userName}>
 										{sellerData.userName}
 									</Text>
 									<StarRating
 										disabled
-										rating={sellerData.rating.reduce((a, b) => a+b)/sellerData.rating.length}
+										rating={
+											sellerData.rating.reduce(
+												(a, b) => a + b
+											) / sellerData.rating.length
+										}
 										starSize={18}
 										starStyle={styles.stars}
 										fullStarColor={"#FDCC0D"}

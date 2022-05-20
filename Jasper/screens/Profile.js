@@ -38,7 +38,7 @@ const { width, height } = Dimensions.get("screen");
 const thumbMeasure = (width - 48 - 32) / 3;
 
 function Profile({ route, navigation }) {
-	const { allItems, userId } = route.params;
+	const { allItems, userId, otherUser } = route.params;
 
 	const [userData, setUserData] = useState();
 	const [editInfoField, setEditInfoField] = useState(false);
@@ -531,6 +531,20 @@ function Profile({ route, navigation }) {
 										style={styles.avatar}
 									/>
 								</TouchableOpacity>
+
+								{userData.uw && (
+									<Image
+										source={require("../assets/imgs/uw.png")}
+										style={{
+											width: 40,
+											height: 25,
+											position: "absolute",
+											top: 100,
+											left: 200,
+										}}
+										resizeMode="cover"
+									/>
+								)}
 							</Block>
 							<Block style={styles.info}>
 								<Block
@@ -544,7 +558,11 @@ function Profile({ route, navigation }) {
 								>
 									<StarRating
 										disabled
-										rating={parseFloat(userData.rating.reduce((a, b) => a+b)/userData.rating.length)}
+										rating={parseFloat(
+											userData.rating.reduce(
+												(a, b) => a + b
+											) / userData.rating.length
+										)}
 										starSize={25}
 										starStyle={styles.stars}
 										fullStarColor={"#FDCC0D"}
@@ -636,12 +654,14 @@ function Profile({ route, navigation }) {
 										>
 											{renderUserName()}
 										</Button>
-										<Icon
-											name="edit"
-											family="AntDesing"
-											size={20}
-											style={{ top: 18 }}
-										/>
+										{!otherUser && (
+											<Icon
+												name="edit"
+												family="AntDesing"
+												size={20}
+												style={{ top: 18 }}
+											/>
+										)}
 									</Block>
 									<Block row>
 										<Button
@@ -668,12 +688,14 @@ function Profile({ route, navigation }) {
 										>
 											{renderLocation()}
 										</Button>
-										<Icon
-											name="edit"
-											family="AntDesing"
-											size={20}
-											style={{ top: 10 }}
-										/>
+										{!otherUser && (
+											<Icon
+												name="edit"
+												family="AntDesing"
+												size={20}
+												style={{ top: 10 }}
+											/>
+										)}
 									</Block>
 								</Block>
 								<Block middle style={{ marginTop: 20 }}>
@@ -684,131 +706,152 @@ function Profile({ route, navigation }) {
 									>
 										{renderIntro()}
 									</Text>
-									<Button
-										color="transparent"
-										textStyle={{
-											color: "#5E72E4",
-											fontWeight: "500",
-											fontSize: 15,
-										}}
-										style={{ marginBottom: 0, height: 20 }}
-										onPress={() => handleEditInfo("intro")}
-									>
-										Edit
-									</Button>
+									{!otherUser && (
+										<Button
+											color="transparent"
+											textStyle={{
+												color: "#5E72E4",
+												fontWeight: "500",
+												fontSize: 15,
+											}}
+											style={{
+												marginBottom: 0,
+												height: 20,
+											}}
+											onPress={() =>
+												handleEditInfo("intro")
+											}
+										>
+											Edit
+										</Button>
+									)}
 								</Block>
-								<Block
-									middle
-									style={{
-										marginTop: 30,
-										marginBottom: 16,
-									}}
-								>
-									<Block style={styles.divider} />
-								</Block>
-								<Block row space="between">
-									<Text
-										bold
-										size={16}
-										color="#525F7F"
-										style={{ marginTop: 12 }}
-									>
-										Saved Items
-									</Text>
-									<Button
-										small
-										color="transparent"
-										textStyle={{
-											color: "#5E72E4",
-											fontSize: 12,
-											marginLeft: 24,
-										}}
-										onPress={() =>
-											navigation.navigate("SavedTab")
-										}
-									>
-										View all
-									</Button>
-								</Block>
-								<Block
-									style={{
-										paddingBottom: -HeaderHeight * 2,
-									}}
-								>
-									<Block
-										row
-										space="between"
-										style={{ flexWrap: "wrap" }}
-									>
-										{renderSavedItems()}
+								{!otherUser && (
+									<Block>
+										<Block
+											middle
+											style={{
+												marginTop: 30,
+												marginBottom: 16,
+											}}
+										>
+											<Block style={styles.divider} />
+										</Block>
+										<Block row space="between">
+											<Text
+												bold
+												size={16}
+												color="#525F7F"
+												style={{ marginTop: 12 }}
+											>
+												Saved Items
+											</Text>
+											<Button
+												small
+												color="transparent"
+												textStyle={{
+													color: "#5E72E4",
+													fontSize: 12,
+													marginLeft: 24,
+												}}
+												onPress={() =>
+													navigation.navigate(
+														"SavedTab"
+													)
+												}
+											>
+												View all
+											</Button>
+										</Block>
+										<Block
+											style={{
+												paddingBottom:
+													-HeaderHeight * 2,
+											}}
+										>
+											<Block
+												row
+												space="between"
+												style={{ flexWrap: "wrap" }}
+											>
+												{renderSavedItems()}
+											</Block>
+										</Block>
+										<Block row space="between">
+											<Text
+												bold
+												size={16}
+												color="#525F7F"
+												style={{ marginTop: 12 }}
+											>
+												Posted Items
+											</Text>
+										</Block>
+										<Block>
+											<ScrollView
+												horizontal={true}
+												pagingEnabled={true}
+												decelerationRate={0}
+												scrollEventThrottle={16}
+												snapToAlignment="center"
+												showsHorizontalScrollIndicator={
+													false
+												}
+												snapToInterval={
+													130 +
+													theme.SIZES.BASE * 0.375
+												}
+												contentContainerStyle={{
+													paddingHorizontal:
+														theme.SIZES.BASE / 2,
+												}}
+											>
+												{renderPostedItems()}
+											</ScrollView>
+										</Block>
+										<Block space="between">
+											<Text
+												bold
+												size={16}
+												color="#525F7F"
+												style={{ marginTop: 12 }}
+											>
+												Payment Information
+											</Text>
+										</Block>
+										{renderPaymentInformation()}
+										<Block
+											center
+											style={{
+												paddingBottom: HeaderHeight * 2,
+											}}
+										>
+											<Button
+												style={{
+													width:
+														width -
+														theme.SIZES.BASE * 6,
+													marginTop: 20,
+													justifyContent: "center",
+													alignItems: "center",
+													borderRadius: 30,
+												}}
+												textStyle={{
+													fontSize: 15,
+													fontWeight: "600",
+												}}
+												onPress={() => {
+													logout();
+													navigation.navigate(
+														"Login"
+													);
+												}}
+											>
+												Log Out
+											</Button>
+										</Block>
 									</Block>
-								</Block>
-								<Block row space="between">
-									<Text
-										bold
-										size={16}
-										color="#525F7F"
-										style={{ marginTop: 12 }}
-									>
-										Posted Items
-									</Text>
-								</Block>
-								<Block>
-									<ScrollView
-										horizontal={true}
-										pagingEnabled={true}
-										decelerationRate={0}
-										scrollEventThrottle={16}
-										snapToAlignment="center"
-										showsHorizontalScrollIndicator={false}
-										snapToInterval={
-											130 + theme.SIZES.BASE * 0.375
-										}
-										contentContainerStyle={{
-											paddingHorizontal:
-												theme.SIZES.BASE / 2,
-										}}
-									>
-										{renderPostedItems()}
-									</ScrollView>
-								</Block>
-								<Block space="between">
-									<Text
-										bold
-										size={16}
-										color="#525F7F"
-										style={{ marginTop: 12 }}
-									>
-										Payment Information
-									</Text>
-								</Block>
-								{renderPaymentInformation()}
-								<Block
-									center
-									style={{
-										paddingBottom: HeaderHeight * 2,
-									}}
-								>
-									<Button
-										style={{
-											width: width - theme.SIZES.BASE * 6,
-											marginTop: 20,
-											justifyContent: "center",
-											alignItems: "center",
-											borderRadius: 30,
-										}}
-										textStyle={{
-											fontSize: 15,
-											fontWeight: "600",
-										}}
-										onPress={() => {
-											logout();
-											navigation.navigate("Login");
-										}}
-									>
-										Log Out
-									</Button>
-								</Block>
+								)}
 							</Block>
 						</Block>
 					</ScrollView>

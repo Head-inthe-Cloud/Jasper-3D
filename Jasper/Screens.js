@@ -467,6 +467,27 @@ function LandingStack({ navigation }) {
 					}}
 				/>
 			)}
+			{!loading && (
+				<Stack.Screen
+					name="Profile-other"
+					component={Profile}
+					initialParams={{
+						allItems: allItems,
+					}}
+					options={{
+						header: ({ navigation, scene, route }) => (
+							<Header
+								title="Seller Profile"
+								back
+								navigation={navigation}
+								scene={scene}
+								route={route}
+							/>
+						),
+						headerShown: true,
+					}}
+				/>
+			)}
 		</Stack.Navigator>
 	);
 }
