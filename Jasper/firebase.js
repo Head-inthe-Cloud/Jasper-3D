@@ -65,7 +65,7 @@ const registerWithEmailAndPassword = async (userName, email, password) => {
             email: email,
             intro: "Hi, I am a new user",
             location: "Seattle",
-            PaymentOptions: {default: "default"},
+            paymentOptions: {default: "default"},
             postedItems: ["default"],
             savedItems: ["default"],
             rating: 5,

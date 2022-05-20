@@ -15,6 +15,12 @@ import {
 	set as firebaseSet,
 	onValue,
 } from "firebase/database";
+import {
+	getDownloadURL,
+	getStorage,
+	ref as storageRef,
+	uploadBytes,
+} from "firebase/storage";
 
 import { Button, Input } from "../components";
 import { Theme, Images } from "../constants";
@@ -87,7 +93,7 @@ const Chat = ({ route, navigation }) => {
 			}
 		};
 
-		const handleSentMessage = (type, content) => {
+		const handleSentMessage = async (type, content) => {
 			if (!content) {
 				return;
 			}
@@ -111,12 +117,25 @@ const Chat = ({ route, navigation }) => {
 					newMessage.contentType = "text";
 					break;
 				case "image":
-					newMessage.content = content;
+					const storage = getStorage();
+					const uriSplit = content.split("/");
+					const imgName = uriSplit[uriSplit.length - 1];
+					const itemImgRef = storageRef(
+						storage,
+						"conversationData/" + conversationId + "/" + imgName
+					);
+					const response = await fetch(content);
+					const blob = await response.blob();
+					await uploadBytes(itemImgRef, blob).catch((error) => {
+						console.warn(error);
+					});
+					const remoteUrl = await getDownloadURL(itemImgRef);
+					newMessage.content = remoteUrl;
 					newMessage.contentType = "image";
 					break;
 				case "paymentInfo":
 					newMessage.content = content;
-					if (content.includes("data:image/jpeg;base64")) {
+					if (content.includes("firebasestorage")) {
 						newMessage.contentType = "image";
 					} else {
 						newMessage.contentType = "text";
@@ -143,10 +162,10 @@ const Chat = ({ route, navigation }) => {
 				base64: true,
 			};
 			const result = await ImagePicker.launchImageLibraryAsync(options);
-			if(!result.base64){
+			if (!result.uri) {
 				return;
 			}
-			handleSentMessage('image', "data:image/jpeg;base64," + result.base64);
+			handleSentMessage("image", result.uri);
 		};
 
 		const renderMessages = () => {
@@ -485,11 +504,11 @@ const Chat = ({ route, navigation }) => {
 			}
 		};
 
-		const endConversation = () =>{
-			const newConversation = {...conversation};
+		const endConversation = () => {
+			const newConversation = { ...conversation };
 			newConversation.tradeEnded = true;
 			firebaseSet(conversationRef, newConversation);
-		}
+		};
 
 		const renderPaymentOptions = () => {
 			if (!userData.paymentOptions) {
@@ -499,12 +518,13 @@ const Chat = ({ route, navigation }) => {
 				<TouchableOpacity
 					style={{}}
 					key={"chat-" + paymentOption}
-					onPress={() =>
-						{handleSentMessage(
+					onPress={() => {
+						handleSentMessage(
 							"paymentInfo",
 							userData.paymentOptions[paymentOption]
-						); endConversation()}
-					}
+						);
+						endConversation();
+					}}
 				>
 					<Image
 						source={Images.PaymentOptionLogos[paymentOption]}
@@ -518,7 +538,6 @@ const Chat = ({ route, navigation }) => {
 				</TouchableOpacity>
 			));
 		};
-
 
 		return (
 			<Block flex center style={styles.home}>

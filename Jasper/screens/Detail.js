@@ -92,9 +92,9 @@ function Detail({ route, navigation }) {
 			);
 			onValue(otherItemRef, (snapshot) => {
 				setOtherItems(
-					Object.keys(snapshot.val()).filter(key => key != itemId).map(
-						(key) => snapshot.val()[key]
-					)
+					Object.keys(snapshot.val())
+						.filter((key) => key != itemId)
+						.map((key) => snapshot.val()[key])
 				);
 			});
 		};
@@ -131,6 +131,14 @@ function Detail({ route, navigation }) {
 
 		navigation.goBack();
 		alert("Item Deleted");
+	};
+
+	const renderIntro = () => {
+		if (sellerData.intro.length > 100) {
+			return sellerData.intro.slice(0, 100) + "...";
+		} else {
+			return sellerData.intro;
+		}
 	};
 
 	const renderImageCarousel = () => {
@@ -248,7 +256,7 @@ function Detail({ route, navigation }) {
 								paddingBottom: theme.SIZES.BASE,
 							}}
 						>
-							<Block width={(width / 7) * 4}>
+							<Block flex>
 								<Text
 									size={16}
 									color={Theme.COLORS.PRIMARY}
@@ -262,38 +270,68 @@ function Detail({ route, navigation }) {
 								>
 									{item.title}
 								</Text>
-							</Block>
-							<Block>
-								<Block flex row style={{ top: 15 }}>
-									<Image
-										source={{
-											uri: sellerData.avatar,
-										}}
-										style={styles.avatar}
-									/>
-									<Block>
-										<Text size={14} style={styles.userName}>
-											{sellerData.userName}
-										</Text>
-										<StarRating
-											disabled
-											rating={sellerData.rating}
-											starSize={18}
-											starStyle={styles.stars}
-											fullStarColor={"#FDCC0D"}
-										/>
-									</Block>
-								</Block>
-								<Block>
+								<Block flex row>
 									<Text size={24} style={styles.productPrice}>
 										{"$" +
 											parseFloat(item.price).toFixed(2)}
 									</Text>
+									{!item.negotiable && (
+										<Text
+											size={15}
+											style={{left: 5, top: 20}}
+											color={Theme.COLORS.GRAY}
+										>
+											(Not Negotiable)
+										</Text>
+									)}
 								</Block>
 							</Block>
 						</Block>
 						{renderImageCarousel()}
 						<Block style={styles.descriptionBox}>
+							<Text
+								size={18}
+								color={theme.COLORS.BLACK}
+								style={styles.title}
+							>
+								Seller Information:
+							</Text>
+							<Block
+								flex
+								row
+								style={{ top: 15, left: 10, marginBottom: 20 }}
+							>
+								<Image
+									source={{
+										uri: sellerData.avatar,
+									}}
+									style={styles.avatar}
+								/>
+								<Block>
+									<Text size={14} style={styles.userName}>
+										{sellerData.userName}
+									</Text>
+									<StarRating
+										disabled
+										rating={sellerData.rating}
+										starSize={18}
+										starStyle={styles.stars}
+										fullStarColor={"#FDCC0D"}
+									/>
+								</Block>
+							</Block>
+							<Block
+								flex
+								style={{ marginLeft: 20, marginBottom: 20 }}
+							>
+								<Text
+									size={14}
+									style={[styles.userName]}
+									color={Theme.COLORS.GRAY}
+								>
+									{renderIntro()}
+								</Text>
+							</Block>
 							<Text
 								size={18}
 								color={theme.COLORS.BLACK}

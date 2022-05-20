@@ -13,9 +13,8 @@ const { height, width } = Dimensions.get("screen");
 import Theme from "../constants/Theme";
 import Images from "../constants/Images";
 
-const Landing = (props) => {
-	const { navigation } = props;
-
+const Landing = ({route, navigation}) => {
+	
 	return (
 		<Block flex style={styles.container}>
 			<StatusBar hidden />

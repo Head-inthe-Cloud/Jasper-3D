@@ -25,11 +25,16 @@ const Home = ({ route, navigation }) => {
 	const [category, setCategory] = useState("All");
 	const [searchText, setSearchText] = useState("");
 	const [page, setPage] = useState(1);
+	const { uw } = route.params;
 
 	useEffect(() => {
 		const db = getDatabase();
 		// const allItemsRef = dbRef(db, "allItems/");
-		const allItemsRef = query(dbRef(db, "allItems"), orderByChild("createDate"), limitToLast(page * 6));
+		const allItemsRef = query(
+			dbRef(db, "allItems"),
+			orderByChild("createDate"),
+			limitToLast(page * 6)
+		);
 
 		const allItemsOffFunction = onValue(allItemsRef, (snapshot) => {
 			const newAllItems = snapshot.val();
@@ -43,21 +48,40 @@ const Home = ({ route, navigation }) => {
 		return cleanUp;
 	}, [page]);
 
+	useEffect(() => {
+		if (route.params.searchText) {
+			setSearchText(route.params.searchText);
+		}
+	}, [route.params.searchText]);
+
 	// Need to add search functionality
 	const allItemList = Object.keys(allItems).map((key) => allItems[key]);
 	let items = allItemList;
 	if (category !== "All") {
 		items = allItemList.filter((item) => item.category === category);
 	}
-	items = items.filter(
-		(item) =>
-			item.title.toLowerCase().includes(searchText.toLowerCase()) ||
-			item.description.toLowerCase().includes(searchText.toLowerCase())
-	);
+	if (searchText.length > 0) {
+		items = items.filter(
+			(item) =>
+				item.title.toLowerCase().includes(searchText.toLowerCase()) ||
+				item.description
+					.toLowerCase()
+					.includes(searchText.toLowerCase())
+		);
+	}
+
+	// Filter UW Visibility
+	if(!uw){
+		items = items.filter(
+			(item) => 
+				!item.UWvisibility
+			
+		)
+	}
 
 	// sort items by date
 	items = items.sort((first, second) => {
-		return second.createDate - first.createDate;
+		return Date.parse(second.createDate) - Date.parse(first.createDate);
 	});
 
 	const renderItems = () => {

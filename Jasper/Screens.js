@@ -149,7 +149,7 @@ function ProfileStack({ route, navigation }) {
 						/>
 					),
 					cardStyle: { backgroundColor: "#FFFFFF" },
-					headerShown: false
+					headerShown: false,
 				}}
 			/>
 		</Stack.Navigator>
@@ -223,7 +223,7 @@ function HomeStack({ route }) {
 			<Stack.Screen
 				name="Home"
 				component={Home}
-				initialParams={{ allItems: allItems }}
+				initialParams={{ uw: users[userId].uw }}
 				options={{
 					header: ({ navigation, scene }) => (
 						<Header
@@ -314,11 +314,11 @@ function LandingStack({ navigation }) {
 			conversationsOffFunction();
 			usersOffFunction();
 		}
-	
+
 		return cleanUp;
 	}, []);
 
-	if(users && userId && allItems && conversations){
+	if (users && userId && allItems && conversations) {
 		loading = false;
 	}
 
@@ -373,97 +373,104 @@ function LandingStack({ navigation }) {
 					}}
 				/>
 			)}
-			{loading && <Stack.Screen
-				name="Loading"
-				component={Loading}
-			/>}
-			{!loading && <Stack.Screen
-				name="App"
-				component={AppTabs}
-				initialParams={{
-					allItems: allItems,
-					conversations: conversations,
-					users: users,
-					userId: userId,
-				}}
-			/>}
-			{!loading &&<Stack.Screen
-				name="Support"
-				component={Support}
-				initialParams={{
-					userId: userId,
-				}}
-				options={{
-					header: ({ navigation, scene }) => (
-						<Header
-							title="Support"
-							back
-							navigation={navigation}
-							scene={scene}
-						/>
-					),
-					headerShown: true,
-				}}
-			/>}
-			{!loading &&<Stack.Screen
-				name="SupportDone"
-				component={SupportDone}
-				options={{
-					header: ({ navigation, scene }) => (
-						<Header
-							title="Support Done"
-							back
-							navigation={navigation}
-							scene={scene}
-						/>
-					),
-					headerShown: true,
-				}}
-			/>}
-			{!loading && <Stack.Screen
-				name="Chat"
-				component={Chat}
-				initialParams={{
-					allItems: allItems,
-					conversations: conversations,
-					users: users,
-					userId: userId,
-				}}
-				options={{
-					header: ({ navigation, scene }) => (
-						<Header
-							title={"Chat"}
-							back
-							navigation={navigation}
-							scene={scene}
-						/>
-					),
-					headerShown: true,
-					cardStyle: { backgroundColor: "#F8F9FE" },
-				}}
-			/>}
-			{!loading && <Stack.Screen
-				name="Detail-Chat"
-				component={Detail}
-				initialParams={{
-					allItems: allItems,
-					users: users,
-					userId: userId,
-				}}
-				options={{
-					header: ({ navigation, scene, route }) => (
-						<Header
-							title="Detail"
-							back
-							navigation={navigation}
-							scene={scene}
-							route={route}
-							userData={users[userId]}
-						/>
-					),
-					headerShown: true,
-				}}
-			/>}
+			{loading && <Stack.Screen name="Loading" component={Loading} />}
+			{!loading && (
+				<Stack.Screen
+					name="App"
+					component={AppTabs}
+					initialParams={{
+						allItems: allItems,
+						conversations: conversations,
+						users: users,
+						userId: userId,
+					}}
+				/>
+			)}
+			{!loading && (
+				<Stack.Screen
+					name="Support"
+					component={Support}
+					initialParams={{
+						userId: userId,
+					}}
+					options={{
+						header: ({ navigation, scene }) => (
+							<Header
+								title="Support"
+								back
+								navigation={navigation}
+								scene={scene}
+							/>
+						),
+						headerShown: true,
+					}}
+				/>
+			)}
+			{!loading && (
+				<Stack.Screen
+					name="SupportDone"
+					component={SupportDone}
+					options={{
+						header: ({ navigation, scene }) => (
+							<Header
+								title="Support Done"
+								back
+								navigation={navigation}
+								scene={scene}
+							/>
+						),
+						headerShown: true,
+					}}
+				/>
+			)}
+			{!loading && (
+				<Stack.Screen
+					name="Chat"
+					component={Chat}
+					initialParams={{
+						allItems: allItems,
+						conversations: conversations,
+						users: users,
+						userId: userId,
+					}}
+					options={{
+						header: ({ navigation, scene }) => (
+							<Header
+								title={"Chat"}
+								back
+								navigation={navigation}
+								scene={scene}
+							/>
+						),
+						headerShown: true,
+						cardStyle: { backgroundColor: "#F8F9FE" },
+					}}
+				/>
+			)}
+			{!loading && (
+				<Stack.Screen
+					name="Detail-Chat"
+					component={Detail}
+					initialParams={{
+						allItems: allItems,
+						users: users,
+						userId: userId,
+					}}
+					options={{
+						header: ({ navigation, scene, route }) => (
+							<Header
+								title="Detail"
+								back
+								navigation={navigation}
+								scene={scene}
+								route={route}
+								userData={users[userId]}
+							/>
+						),
+						headerShown: true,
+					}}
+				/>
+			)}
 		</Stack.Navigator>
 	);
 }

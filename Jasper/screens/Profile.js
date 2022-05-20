@@ -185,17 +185,24 @@ function Profile({ route, navigation }) {
 		} else {
 			return userData.postedItems
 				.filter((id) => id !== "default")
-				.map((itemId, idx) => (
-					<Block flex row key={"posted-" + idx}>
-						<Card
-							item={allItems[itemId]}
-							style={{
-								width: 150,
-								marginHorizontal: theme.SIZES.BASE,
-							}}
-						/>
-					</Block>
-				));
+				.map((itemId, idx) => {
+					const itemData = allItems[itemId];
+					if (!itemData) {
+						return null;
+					}
+					return (
+						<Block flex row key={"posted-" + idx}>
+							<Card
+								item={itemData}
+								style={{
+									width: 150,
+									marginHorizontal: theme.SIZES.BASE,
+								}}
+							/>
+						</Block>
+					);
+				})
+				.filter((block) => block !== null);
 		}
 	};
 
@@ -790,7 +797,10 @@ function Profile({ route, navigation }) {
 											alignItems: "center",
 											borderRadius: 30,
 										}}
-										textStyle={{ fontSize: 15, fontWeight: "600" }}
+										textStyle={{
+											fontSize: 15,
+											fontWeight: "600",
+										}}
 										onPress={() => {
 											logout();
 											navigation.navigate("Login");

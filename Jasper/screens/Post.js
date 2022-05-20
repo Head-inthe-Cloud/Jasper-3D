@@ -91,7 +91,7 @@ function Post({ route, navigation }) {
 			mediaTypes: ImagePicker.MediaTypeOptions.Images,
 			allowsEditing: true,
 			aspect: [4, 3],
-			quality: 1,
+			quality: 0
 		};
 		const result = await ImagePicker.launchImageLibraryAsync(options);
 
@@ -141,7 +141,7 @@ function Post({ route, navigation }) {
 			const allItemsRef = dbRef(db, "allItems");
 			const itemId = firebasePush(allItemsRef, newItem).key;
 
-			// The following code attempts to store data at firebase storage
+			// The following code stores data at firebase storage
 			// ****************************************************
 			const storage = getStorage();
 			const remoteUrls = await Promise.all(
@@ -180,12 +180,18 @@ function Post({ route, navigation }) {
 					firebaseSet(userRef, newUserData);
 				}
 			});
-			
+			setTitle("");
+			setDescription("");
+			setPrice(0);
+			setMediaData([]);
+			setNegotiableSwitch(false);
+			setDropOffSwitch(false);
+			setUWVisibleSwitch(false);
 			navigation.navigate("PostDone");
-			console.warn("Upload success");
+			alert("Upload success");
 		} else {
 			// Temp
-			console.warn("Information incomplete");
+			alert("Information incomplete");
 		}
 	};
 
@@ -240,6 +246,7 @@ function Post({ route, navigation }) {
 								placeholder="Name of your item"
 								iconContent={<Block />}
 								style={{ marginBottom: 10 }}
+								value={title}
 								onChangeText={(text) => setTitle(text)}
 							/>
 						</Block>
@@ -404,6 +411,7 @@ function Post({ route, navigation }) {
 								style={{ width: 100 }}
 								fontSize={15}
 								fontWeight={"600"}
+								value={price}
 								onChangeText={(text) => setPrice(text)}
 							/>
 						</Block>

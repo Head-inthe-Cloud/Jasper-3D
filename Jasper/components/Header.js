@@ -132,7 +132,7 @@ function Header(props) {
 			}
 		};
 		const { navigation } = props;
-		const { handleSearch } = props;
+		
 		return (
 			<Input
 				right
@@ -148,7 +148,7 @@ function Header(props) {
 						family="ArgonExtra"
 					/>
 				}
-				onChangeText={(newText) => handleSearch(newText)}
+				onChangeText={(newText) => navigation.navigate({name:'Home', params: {searchText: newText}, merge: true})}
 			/>
 		);
 	};
