@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+
 //galio
 import { Block, Text, theme } from "galio-framework";
 import {
@@ -6,13 +8,13 @@ import {
 	ScrollView,
 	StyleSheet,
 } from "react-native";
+import { getDatabase, ref as dbRef, onValue } from "firebase/database";
 //argon
 import { Images, Theme } from "../constants";
-import { items } from "../constants/mockData";
 
 import { Card } from "../components";
-import React from "react";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import Loading from "./Loading";
 
 const { width } = Dimensions.get("screen");
 
@@ -20,7 +22,29 @@ const thumbMeasure = (width - 48 - 32) / 3;
 const cardWidth = width - theme.SIZES.BASE * 2;
 
 function Saved({ route, navigation }) {
-	const { allItems, userData } = route.params;
+	const { allItems, userId } = route.params;
+	const [userData, setUserData] = useState();
+
+	useEffect(() => {
+		const db = getDatabase();
+		const userDataRef = dbRef(db, "users/" + userId);
+
+		const userDataOffFunction = onValue(userDataRef, (snapshot) => {
+			const newUserData = snapshot.val();
+			setUserData(newUserData);
+		});
+
+		function cleanUp() {
+			userDataOffFunction();
+		}
+
+		return cleanUp;
+	}, []);
+
+	// Page protector
+	if (!userData) {
+		return <Loading />;
+	}
 	const savedItemIds = userData.savedItems;
 
 	const renderSavedItems = () => {
@@ -30,14 +54,19 @@ function Saved({ route, navigation }) {
 				on the top right of the detail page to save your favorite items!
 			</Text>;
 		} else {
-			return savedItemIds.filter(id => id !== 'default' && Object.keys(allItems).includes(id)).map((itemId) => (
-				<Card
-					item={allItems[itemId]}
-					horizontal
-					key={"saved_" + itemId}
-					userData={userData}
-				/>
-			));
+			return savedItemIds
+				.filter(
+					(id) =>
+						id !== "default" && Object.keys(allItems).includes(id)
+				)
+				.map((itemId) => (
+					<Card
+						item={allItems[itemId]}
+						horizontal
+						key={"saved_" + itemId}
+						userData={userData}
+					/>
+				));
 		}
 	};
 	return (

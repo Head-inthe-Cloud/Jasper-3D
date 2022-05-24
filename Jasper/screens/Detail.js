@@ -187,7 +187,7 @@ function Detail({ route, navigation }) {
 		));
 	};
 
-	const handleConversationStarter = async () => {
+	const handleConversationStarter = () => {
 		for (let i = 0; i < conversationList.length; i++) {
 			// If the conversation already exists, navigate to that conversation
 			if (
@@ -196,7 +196,7 @@ function Detail({ route, navigation }) {
 				conversationList[i].itemId === itemId
 			) {
 				navigation.navigate("Chat", {
-					conversationId: conversationsOverview[i][0],
+					conversationId: conversationList[i].conversationId,
 					userId: userId,
 					subjectId: sellerData.userId,
 				});
@@ -298,39 +298,66 @@ function Detail({ route, navigation }) {
 							>
 								Seller Information:
 							</Text>
-							<Block
-								flex
-								row
-								style={{ top: 15, left: 10, marginBottom: 20 }}
+
+							<TouchableOpacity
+								onPress={() =>
+									navigation.navigate("Profile-other", {
+										userId: sellerData.userId,
+										otherUser: true,
+									})
+								}
 							>
-								<TouchableOpacity onPress={()=>navigation.navigate("Profile-other", {userId: sellerData.userId, otherUser: true})}>
+								<Block
+									flex
+									row
+									style={{
+										top: 15,
+										left: 10,
+										marginBottom: 20,
+									}}
+								>
 									<Image
 										source={{
 											uri: sellerData.avatar,
 										}}
 										style={styles.avatar}
 									/>
-								</TouchableOpacity>
-								<Block>
-									<Text size={14} style={styles.userName}>
-										{sellerData.userName}
-									</Text>
-									<StarRating
-										disabled
-										rating={
-											sellerData.rating.reduce(
-												(a, b) => a + b
-											) / sellerData.rating.length
-										}
-										starSize={18}
-										starStyle={styles.stars}
-										fullStarColor={"#FDCC0D"}
-									/>
+									{sellerData.uw && (
+										<Image
+											source={require("../assets/imgs/uw.png")}
+											style={{
+												width: 25,
+												height: 15,
+												position: "absolute",
+												top: 45,
+												left: 40,
+											}}
+											resizeMode="cover"
+										/>
+									)}
+
+									<Block>
+										<Text size={14} style={styles.userName}>
+											{sellerData.userName}
+										</Text>
+										<StarRating
+											disabled
+											rating={
+												sellerData.rating.reduce(
+													(a, b) => a + b
+												) / sellerData.rating.length
+											}
+											starSize={18}
+											starStyle={styles.stars}
+											fullStarColor={"#FDCC0D"}
+										/>
+									</Block>
 								</Block>
-							</Block>
+							</TouchableOpacity>
+
 							<Block
 								flex
-								style={{marginLeft: 3, marginBottom: 20 }}
+								style={{ marginLeft: 3, marginBottom: 20 }}
 							>
 								<Text
 									size={14}
@@ -497,6 +524,7 @@ const styles = StyleSheet.create({
 		height: 60,
 		borderRadius: 30,
 		borderWidth: 0,
+		marginRight: 10
 	},
 	albumThumb: {
 		borderRadius: 4,

@@ -58,7 +58,7 @@ const CustomTabBarButton = ({ children, onPress }) => (
 );
 
 function SavedStack({ route }) {
-	const { allItems, userData } = route.params;
+	const { allItems, userId } = route.params;
 
 	return (
 		<Stack.Navigator
@@ -72,7 +72,7 @@ function SavedStack({ route }) {
 				component={Saved}
 				initialParams={{
 					allItems: allItems,
-					userData: userData,
+					userId: userId,
 				}}
 				options={{
 					header: ({ navigation, scene }) => (
@@ -493,7 +493,7 @@ function LandingStack({ navigation }) {
 
 function AppTabs({ route }) {
 	const { allItems, conversations, users, userId } = route.params;
-	const userData = users[userId];
+	
 	return (
 		<Tab.Navigator
 			screenOptions={{
@@ -542,7 +542,7 @@ function AppTabs({ route }) {
 			<Tab.Screen
 				name="SavedTab"
 				component={SavedStack}
-				initialParams={{ allItems: allItems, userData: userData }}
+				initialParams={{ allItems: allItems, userId: userId }}
 				options={{
 					tabBarIcon: ({ focused }) => {
 						if (focused) {

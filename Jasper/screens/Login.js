@@ -28,21 +28,20 @@ const Login = ({ navigation }) => {
 			if (user) {
 				setUserId(user.uid);
 				navigation.navigate("App");
-			} 
+			}
 		});
-	}, [])
+	}, []);
 
 	const checkCompletion = () => {
-		if(!email || !password){
+		if (!email || !password) {
 			alert("Please fill in your email and password");
 		} else {
 			return true;
 		}
-
-	}
+	};
 
 	const handleLogin = () => {
-		if(checkCompletion()){
+		if (checkCompletion()) {
 			logInWithEmailAndPassword(email, password);
 			setPassword("");
 			navigation.navigate("App");
@@ -60,6 +59,7 @@ const Login = ({ navigation }) => {
 					source={require("../assets/imgs/login.png")}
 					style={{ width: width, height: 320 }}
 				></Image>
+
 				<Text style={styles.textHeader}>Welcome Back!</Text>
 				<Block style={{ paddingHorizontal: theme.SIZES.BASE }}>
 					<Input
@@ -137,13 +137,13 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		marginTop: 100,
-		marginBottom: 400
+		marginBottom: 400,
 	},
 	logo: {
 		width: 70,
 		height: 70,
 		position: "absolute",
-		top: 50,
+		top: -30,
 		left: 15,
 	},
 	textHeader: {
