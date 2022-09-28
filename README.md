@@ -1,6 +1,6 @@
 ![Jasper Logo](./img/logo.png)
 
-# Jasper-3D
+# Jasper-UW
 
 This is a display of my senior capstone project - Jasper, a school-oriented second-hand trading platform.
 
