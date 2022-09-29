@@ -4,7 +4,13 @@
 
 This is a display of my senior capstone project - Jasper, a school-oriented second-hand trading platform.
 
-# App Development In-progress
+# Demo Videos
+ 
+[Presentation Video](https://www.youtube.com/watch?v=tNQG8K1_cvg)
+[Product Demo Video](https://www.youtube.com/watch?v=IiYi-1DoFnQ)
+
+
+# Screen Shots
 
 ## Home Page
 ![Jasper Home](./img/home.png)
@@ -12,6 +18,6 @@ This is a display of my senior capstone project - Jasper, a school-oriented seco
 ## Prototyping overview
 ![Jasper Figma](./img/figma.png)
 
-# Original Authors of Jasper
+# Authors of Jasper
 
-Aiden Thronsberry, Jeff Tu, Patrick Cheng, Shriyansh Sharma
+Aiden Thronsberry, Jeff Tu, Mary Gadzhimagomedova, Patrick Cheng, Shriyansh Sharma
